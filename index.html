@@ -124,9 +124,9 @@ const AFF=['Ember','Frost','Bloom','Clay','Tide'];
 const FEEDS={Bloom:'Ember',Ember:'Clay',Clay:'Frost',Frost:'Tide',Tide:'Bloom'};
 const QUELLS={Ember:'Frost',Frost:'Bloom',Bloom:'Clay',Clay:'Tide',Tide:'Ember'};
 const COLOR={Ember:'#c8362b',Frost:'#4e9fd1',Bloom:'#4f8f3a',Clay:'#c28a2c',Tide:'#2b3f8c',none:'#8a6fb5'};
-let CONFIG={gold:200,toxCap:100,sessionPts:4,expPerIssue:5,outgrow1:40,outgrow2:100,transferKeep:0.7,maxActive:4,newPerIssue:1,trialGain:4,spiritPrice:25,cooldown:4,sessionsFastPace:30,dealerEvery:2,marketSize:3};
+let CONFIG={gold:200,toxCap:100,sessionPts:4,expPerIssue:5,outgrow1:40,outgrow2:100,transferKeep:0.7,maxActive:4,newPerIssue:1,trialGain:4,spiritPrice:25,cooldown:4,sessionsFastPace:30,dealerEvery:2,marketSize:3,machineGain:2};
 const NAMES=['Pochi','Tama','Kuro','Momo','Chibi','Goro','Yuki','Kin','Fuku','Hachi','Mame','Nene','Suzu','Taro','Ume'];
-const RARITY={common:{w:6,p:20},uncommon:{w:3,p:35},rare:{w:1,p:80},machine:{w:1,p:45}};
+const RARITY={common:{w:6,p:20},uncommon:{w:3,p:35},rare:{w:1,p:80},machine:{w:1,p:45},machine2:{w:1,p:110}};
 // Molds are old objects: consumable, found on expeditions or bought from the antique cart. A mold with `station` is a training machine; built, it is installed in the workshop.
 const C=(name,art,tier,rarity,native,lean,tags,gift,giftText,vice,triggers)=>({name,art,tier,rarity,native,lean,tags,gift,giftText,vice,triggers});
 const MOLDS={
@@ -142,14 +142,21 @@ const MOLDS={
  bucket:C('Bucket','ladle',2,'rare','Tide',['Brawn','Pace'],['holds','washes','carries'],'soothes','hums a washing song','splashes',['paper']),
  kokeshi:C('Kokeshi','kokeshi',1,'common',null,['Heart'],['comforts','watches','sits'],'watches','keeps watch and turns bad dreams away','sulks when left alone',['away']),
  doll:C('Doll','kokeshi',2,'rare',null,['Heart'],['comforts','watches','sits'],'watches','keeps watch and turns bad dreams away','sulks when left alone',['away']),
- hibachi:{...C('Hibachi','hibachi',1,'machine','Ember',['Grit'],['warms','cooks'],'warms','keeps a room warm till morning','soots everything',['paper']),size:'large',station:['Ember','Grit']},
- washtub:{...C('Washtub','washtub',1,'machine','Tide',['Brawn'],['holds','washes'],'soothes','sloshes a lullaby','splashes',['paper']),size:'large',station:['Tide','Brawn'],env:{k:'mood',amt:-2}},
- planter:{...C('Planter','planter',1,'machine','Bloom',['Heart'],['grows','airs','comforts'],'luck','blooms when luck is turning','sheds everywhere',['smallgoods']),size:'large',station:['Bloom','Heart'],env:{k:'temper',amt:-2}},
- wheel:{...C("Potter's wheel",'wheel',1,'machine','Clay',['Knack'],['turns','shapes'],'warns','wobbles before an earthquake','never stops turning',['quiet']),size:'large',station:['Clay','Knack']},
- icechest:{...C('Ice chest','icechest',1,'machine','Frost',['Wits'],['holds','cools'],'soothes','keeps a cool head in the house','sweats on the floor',['paper']),size:'large',station:['Frost','Wits']},
- treadle:{...C('Foot treadle','treadle',1,'machine',null,['Pace','Grit'],['carries','runs'],'luck','keeps the house in rhythm','thumps all night',['quiet']),size:'large',station:['Pace','Grit']},
+ hibachi:{...C('Hibachi','hibachi',1,'machine','Ember',['Grit'],['warms','cooks'],'warms','keeps a room warm till morning','soots everything',['paper']),size:'large',station:['Ember','Grit'],next:'kamado'},
+ washtub:{...C('Washtub','washtub',1,'machine','Tide',['Brawn'],['holds','washes'],'soothes','sloshes a lullaby','splashes',['paper']),size:'large',station:['Tide','Brawn'],env:{k:'mood',amt:-2},next:'tub'},
+ planter:{...C('Planter','planter',1,'machine','Bloom',['Heart'],['grows','airs','comforts'],'luck','blooms when luck is turning','sheds everywhere',['smallgoods']),size:'large',station:['Bloom','Heart'],env:{k:'temper',amt:-2},next:'bed'},
+ wheel:{...C("Potter's wheel",'wheel',1,'machine','Clay',['Knack'],['turns','shapes'],'warns','wobbles before an earthquake','never stops turning',['quiet']),size:'large',station:['Clay','Knack'],next:'kickwheel'},
+ icechest:{...C('Ice chest','icechest',1,'machine','Frost',['Wits'],['holds','cools'],'soothes','keeps a cool head in the house','sweats on the floor',['paper']),size:'large',station:['Frost','Wits'],next:'cellar'},
+ treadle:{...C('Foot treadle','treadle',1,'machine',null,['Pace','Grit'],['carries','runs'],'luck','keeps the house in rhythm','thumps all night',['quiet']),size:'large',station:['Pace','Grit'],next:'mill'},
+ // tier-two machines: the dealer brings one once your tier-one is worn in
+ kamado:{...C('Kamado','hibachi',2,'machine2','Ember',['Grit'],['warms','cooks'],'warms','keeps a house warm all winter','soots everything',['paper']),size:'large',station:['Ember','Grit']},
+ tub:{...C('Cedar tub','washtub',2,'machine2','Tide',['Brawn'],['holds','washes'],'soothes','sloshes a lullaby','splashes',['paper']),size:'large',station:['Tide','Brawn'],env:{k:'mood',amt:-2}},
+ bed:{...C('Garden bed','planter',2,'machine2','Bloom',['Heart'],['grows','airs','comforts'],'luck','blooms when luck is turning','sheds everywhere',['smallgoods']),size:'large',station:['Bloom','Heart'],env:{k:'temper',amt:-2}},
+ kickwheel:{...C('Kick wheel','wheel',2,'machine2','Clay',['Knack'],['turns','shapes'],'warns','wobbles before an earthquake','never stops turning',['quiet']),size:'large',station:['Clay','Knack']},
+ cellar:{...C('Cold cellar','icechest',2,'machine2','Frost',['Wits'],['holds','cools'],'soothes','keeps a cool head in the house','sweats on the floor',['paper']),size:'large',station:['Frost','Wits']},
+ mill:{...C('Mill treadle','treadle',2,'machine2',null,['Pace','Grit'],['carries','runs'],'luck','keeps the house in rhythm','thumps all night',['quiet']),size:'large',station:['Pace','Grit']},
 };
-const CREATURE_MOLDS=Object.keys(MOLDS).filter(m=>!MOLDS[m].station), MACHINE_MOLDS=Object.keys(MOLDS).filter(m=>MOLDS[m].station);
+const CREATURE_MOLDS=Object.keys(MOLDS).filter(m=>!MOLDS[m].station), MACHINE_MOLDS=Object.keys(MOLDS).filter(m=>MOLDS[m].station&&MOLDS[m].tier===1);
 const TIER={1:{size:'small',mat:1,leanF:10,leanC:39,otherF:0,otherC:29,natF:10,natC:29},2:{size:'medium',mat:2,leanF:20,leanC:49,otherF:10,otherC:39,natF:20,natC:39}};
 const MATS={wax:{n:'Ember wax',a:'Ember',g:'D',p:12},charcoal:{n:'Charcoal',a:'Ember',g:'C',p:28},slag:{n:'Kiln slag',a:'Ember',g:'B',rare:1},
  ice:{n:'River ice',a:'Frost',g:'D',p:10},iron:{n:'Iron shavings',a:'Frost',g:'C',p:30},moonsilver:{n:'Moon silver',a:'Frost',g:'B',rare:1},
@@ -221,7 +228,8 @@ function rollStock(){const ids=shuffle(Object.keys(MATS).filter(m=>!MATS[m].rare
  molds:drawMolds(CONFIG.marketSize,CREATURE_MOLDS),dealer:dealerIn()?drawMolds(2,MACHINE_MOLDS):[]};
  if(G.tut>=0&&G.tut<=8&&dealerIn()&&!G.stock.dealer.some(m=>m.id==='treadle'))G.stock.dealer.unshift({id:'treadle',price:RARITY.machine.p});
  G.unl.cart.forEach(id=>{if(!G.stock.molds.some(m=>m.id===id))G.stock.molds.push({id,price:RARITY[MOLDS[id].rarity].p});});
- if(dealerIn())G.unl.dealer.forEach(id=>{if(!G.stock.dealer.some(m=>m.id===id))G.stock.dealer.push({id,price:RARITY.machine.p});});}
+ if(dealerIn())G.unl.dealer.forEach(id=>{if(!G.stock.dealer.some(m=>m.id===id))G.stock.dealer.push({id,price:RARITY.machine.p});});
+ if(dealerIn())machines().filter(wornIn).map(v=>MOLDS[v.mold].next).filter(Boolean).forEach(id=>{if(!G.stock.dealer.some(m=>m.id===id)){G.stock.dealer.push({id,price:RARITY.machine2.p});log('The dealer saw a worn-in machine in your workshop and brought a '+MOLDS[id].name+'.');}});}
 function postRung(c){const id=CUST[c].ladder[G.cust[c].step];const t=REQ[id];G.requests.push({...t,id,uid:uid('q'),due:t.due,cons:t.cons.map(x=>x.slice())});}
 const entered=c=>G.deliveries>=CUST[c].enter;
 function readyRungs(){return Object.keys(CUST).filter(c=>entered(c)&&G.cust[c].step<CUST[c].ladder.length&&G.issue>=G.cust[c].ready&&!G.requests.some(r=>r.c===c&&!r.kind));}
@@ -264,6 +272,7 @@ function transferOut(vid){const v=G.vessels[vid],s=spiritOf(v);if(!s)return 'Emp
 function salvage(vid){const v=G.vessels[vid];if(v.spiritId)return 'Still possessed';delete G.vessels[vid];if(v.mats.length){const m=pick(v.mats);G.inv.mat[m]=(G.inv.mat[m]||0)+1;log('Salvaged the '+v.name+': '+MATS[m].n+' recovered.');}else log('Salvaged the '+v.name+'. Nothing came back.');return null;}
 function roster(){return Object.values(G.vessels).filter(v=>v.spiritId&&!(G.exped&&G.exped.vesselId===v.id));}
 function machines(){return Object.values(G.vessels).filter(v=>v.station);}
+const wornIn=v=>{const s=spiritOf(v);return !!s&&v.station.some(k=>s.v[k]>=v.caps[k]);};// at its cap in a stat it teaches: time for a bigger machine
 function boxSpirits(){return Object.values(G.spirits).filter(s=>!s.vesselId&&!s.owner);}
 function emptyVessels(){return Object.values(G.vessels).filter(v=>!v.spiritId);}
 function possessEmpty(vid,sid){const v=G.vessels[vid],s=G.spirits[sid];if(!v||!s||v.spiritId||s.vesselId)return 'No';possess(v,s);log(s.name+' moved into the '+v.name+'.');return null;}
@@ -286,7 +295,10 @@ function trainPreview(sid,vid,key){const st=G.vessels[sid];if(!st||!st.station)r
  if(st.used>=I.sessions)return {err:'No sessions left today'};const cur=s.v[key];const gain=Math.max(0,Math.min(I.pts,I.ceil[key]-cur,v.caps[key]-cur));
  return {gain,cur,ceil:I.ceil[key],cap:v.caps[key],pts:I.pts,env:st.env};}
 function train(sid,vid,key){const p=trainPreview(sid,vid,key);if(p.err)return p.err;if(p.gain<=0)return p.cur>=p.ceil?'At this machine\'s ceiling ('+gradeOf(p.ceil)+')':'At the vessel\'s cap';
- const st=G.vessels[sid],v=G.vessels[vid],s=spiritOf(v);s.v[key]+=p.gain;st.used++;applySide(s,p.env);s.hist.push('Issue '+G.issue+': trained '+key+' at the '+st.name+' (+'+p.gain+').');log(s.name+' trained '+key+' +'+p.gain+' at the '+st.name+'.');return null;}
+ const st=G.vessels[sid],v=G.vessels[vid],s=spiritOf(v);s.v[key]+=p.gain;st.used++;applySide(s,p.env);s.hist.push('Issue '+G.issue+': trained '+key+' at the '+st.name+' (+'+p.gain+').');log(s.name+' trained '+key+' +'+p.gain+' at the '+st.name+'.');
+ // the machine learns by teaching: its own spirit gains in the stat it taught, up to the body's cap
+ const ms=spiritOf(st);const before=gradeOf(effVal(st,ms,key));const mg=Math.max(0,Math.min(CONFIG.machineGain,st.caps[key]-ms.v[key]));if(mg>0){ms.v[key]+=mg;const after=gradeOf(effVal(st,ms,key));if(after!==before){ms.hist.push('Issue '+G.issue+': worn in; can teach '+key+' to '+after+'.');log('The '+st.name+' is worn in: it can teach '+key+' up to '+after+' now.');}if(wornIn(st)&&ms.v[key]>=st.caps[key])log('The '+st.name+' is at its cap for '+key+'. The dealer will bring a bigger one.');}
+ return null;}
 
 // --- shops ---
 function buyMat(m){const p=matPrice(G,m);if(p==null)return 'Not available';if(G.gold<p)return 'Not enough gold';G.gold-=p;G.inv.mat[m]=(G.inv.mat[m]||0)+1;if(G.stock.limited===m)G.stock.limitedLeft=0;return null;}
@@ -356,7 +368,7 @@ const TUT=[
  {tab:'front',text:'Paid, plus a bonus for the gift match. Shiraishi\'s floors are next: **Accept** her order.',done:()=>G.done.r4||G.requests.some(r=>r.id==='r4'&&r.accepted),unlock:[]},
  {tab:'order',text:'Mold **Whisk** (you own one), material **Rice straw** (you own one too), a spirit from the shrine (25g). It sweeps, but its Pace is only D and she wants C.',done:()=>G.done.r4||roster().some(v=>v.tags.includes('cleans')),unlock:['workshop']},
  {tab:'specials',text:'The machine dealer is on the cart this issue; he comes by every other issue. Buy the **Foot treadle**. Old training machines are vessels like any other: build one and it is installed in the Workshop.',done:()=>G.done.r4||G.inv.mold.treadle>0||machines().length>0,unlock:[]},
- {tab:'order',text:'Mold **Foot treadle**, no material needed, a spirit from the shrine. An empty machine does nothing; a possessed one trains a stat up to its own spirit\'s grade in that stat.',done:()=>G.done.r4||machines().some(v=>v.spiritId),unlock:[]},
+ {tab:'order',text:'Mold **Foot treadle**, no material needed, a spirit from the shrine. An empty machine does nothing; a possessed one trains a stat up to its own spirit\'s grade, and every session wears it in: the machine\'s own grade climbs with use, up to its cap, and then the dealer offers a bigger one.',done:()=>G.done.r4||machines().some(v=>v.spiritId),unlock:[]},
  {tab:'workshop',text:'Feed the whisk a **Sweet potato**: +5 Pace, and 8 toxicity that never comes back. Then train its Pace once at the **Foot treadle**. One session per machine per day.',done:()=>G.done.r4||cleanerPace()>=18,unlock:['travel']},
  {tab:'travel',text:'Pace 19 is still D, one point short of C. Send the whisk to the **Riverbank Shallows**: its first trial is a Pace check, and passing one raises the stat. Then **Go to press** to end the issue.',done:()=>G.done.r4||(G.exped&&G.exped.await)||(!G.exped&&cleanerPace()>=20),unlock:['ledger']},
  {tab:'travel',text:'The report is in. The next trial is Wits, and your whisk has none; a failed trial breaks the body. **Return home** with the haul.',done:()=>G.done.r4||!G.exped,unlock:[]},
@@ -365,7 +377,7 @@ const TUT=[
 ];
 function advanceTut(){if(G.tut==null||G.tut<0)return;while(G.tut<TUT.length&&TUT[G.tut].done())G.tut++;if(G.tut>=TUT.length)G.tut=-1;}
 function unlockedTabs(){if(G.tut==null||G.tut<0)return null;const s=new Set(['front']);for(let i=0;i<G.tut;i++)TUT[i].unlock.forEach(t=>s.add(t));return s;}
-if(typeof module!=='undefined')module.exports={newGame,get G(){return G},CONFIG,MOLDS,MATS,FOODS,LOCS,REQ,CUST,RARITY,fitWith,previewSpirit,decline,unlockText,buildVessel,placeOrder,feed,feedPreview,train,trainPreview,stationInfo,buyMat,buyFood,buySpirit,buyMold,buyMix,fit,deliver,accept,nextIssue,send,pressOn,returnHome,roster,machines,boxSpirits,emptyVessels,possessEmpty,transferOut,salvage,spiritOf,gradeOf,effVal,exportState,importState,checkOutgrow,orderCost,TUT,advanceTut,unlockedTabs,dealerIn};
+if(typeof module!=='undefined')module.exports={newGame,get G(){return G},CONFIG,MOLDS,MATS,FOODS,LOCS,REQ,CUST,RARITY,fitWith,previewSpirit,decline,unlockText,wornIn,buildVessel,placeOrder,feed,feedPreview,train,trainPreview,stationInfo,buyMat,buyFood,buySpirit,buyMold,buyMix,fit,deliver,accept,nextIssue,send,pressOn,returnHome,roster,machines,boxSpirits,emptyVessels,possessEmpty,transferOut,salvage,spiritOf,gradeOf,effVal,exportState,importState,checkOutgrow,orderCost,TUT,advanceTut,unlockedTabs,dealerIn};
 </script>
 
 <script>
@@ -460,7 +472,7 @@ function order(){const o=UI.order;const owned=Object.keys(G.inv.mold).filter(m=>
  <div class="note">A vessel raises a spirit to its floors, never above. Everything past the floor is feeding, training or expeditions. The mold is used up.</div></div></div>`;}
 
 function specials(){const st=G.stock;const tag=m=>st.special===m?'<span class="burst">Special</span>':st.limited===m?'<span class="bd">LIMIT 1</span>':st.soldout===m?'<span class="stamp">Sold out</span>':'';
- const moldLine=e=>{const M=MOLDS[e.id];return `<div class="row sb line"><span><b>${M.name}</b> <span class="bd">${M.rarity}</span><br><span class="muted" style="font-size:12px">${M.station?'machine · trains '+M.station.join(' + '):(M.native||'no native')+' · '+M.tags.join(', ')} · ${M.size||TIER[M.tier].size}${M.tier===2?' · 2 slots':''}</span></span><button data-act="buymold" data-id="${e.id}">${e.price}g</button></div>`;};
+ const moldLine=e=>{const M=MOLDS[e.id];return `<div class="row sb line"><span><b>${M.name}</b> <span class="bd">${M.rarity==='machine2'?'machine · tier 2':M.rarity}</span><br><span class="muted" style="font-size:12px">${M.station?'machine · trains '+M.station.join(' + '):(M.native||'no native')+' · '+M.tags.join(', ')} · ${M.size||TIER[M.tier].size}${M.tier===2?' · 2 slots':''}</span></span><button data-act="buymold" data-id="${e.id}">${e.price}g</button></div>`;};
  const nextDealer=dealerIn()?0:CONFIG.dealerEvery-((G.issue-1)%CONFIG.dealerEvery);
  return `<div class="two" style="margin-bottom:12px"><div class="box dbl"><div class="kick">Sasaki's antique cart · old things a spirit could live in</div><div class="hl big">Molds</div>
  <div class="muted" style="font-size:12px">On the shelf: ${Object.entries(G.inv.mold).filter(([k,n])=>n>0).map(([k,n])=>MOLDS[k].name+' ×'+n).join(', ')||'none'}</div>
@@ -478,7 +490,7 @@ function specials(){const st=G.stock;const tag=m=>st.special===m?'<span class="b
 
 function workshop(){const ro=roster();const mc=machines();const bx=boxSpirits();const opt=(arr,sel,lab)=>arr.map(v=>`<option value="${v.id}" ${sel===v.id?'selected':''}>${lab(v)}</option>`).join('');
  const cards=mc.map(v=>{const I=stationInfo(v.id);const s=I.sp;return `<div class="box"><div class="cre">${svgCreature(v,s)}<div style="min-width:0"><div class="kick">Machine · trains ${v.station.join(' + ')}${v.mats.length?' · '+v.mats.map(m=>MATS[m].n).join(', '):''}</div><div class="hl">${v.name}</div>
- ${s?`<div class="muted" style="font-size:12px">Tended by <b>${esc(s.name)}</b> · ${I.pts} pts a session</div><div class="badges">${v.station.map(k=>`<span class="bd">${k} up to ${gradeOf(I.ceil[k])}</span>`).join('')}${v.env?`<span class="bd" style="border-style:dashed">also → ${v.env.k==='mood'?'Quiet':'Docile'}</span>`:''}</div><div class="row"><span class="kick">sessions today</span><span class="punch">${Array.from({length:I.sessions},(_,i)=>`<i class="${i<v.used?'used':''}"></i>`).join('')}</span></div>`
+ ${s?`<div class="muted" style="font-size:12px">Tended by <b>${esc(s.name)}</b> · ${I.pts} pts a session${wornIn(v)?' · <span class="stamp" style="font-size:10px;padding:0 4px">worn in</span>':''}</div><div class="badges">${v.station.map(k=>`<span class="bd">${k} up to ${gradeOf(I.ceil[k])}</span>`).join('')}${v.env?`<span class="bd" style="border-style:dashed">also → ${v.env.k==='mood'?'Quiet':'Docile'}</span>`:''}</div>${v.station.map(k=>`<div class="kick">${k} wear-in ${effVal(v,s,k)}/${v.caps[k]} · ceiling rises with use</div>${therm(effVal(v,s,k),v.caps[k])}`).join('')}${wornIn(v)?`<div class="note">At its cap. ${MOLDS[v.mold].next?'The dealer carries a '+MOLDS[MOLDS[v.mold].next].name+' now; move this spirit into one to keep its grades.':'Nothing bigger exists yet.'}</div>`:''}<div class="row"><span class="kick">sessions today</span><span class="punch">${Array.from({length:I.sessions},(_,i)=>`<i class="${i<v.used?'used':''}"></i>`).join('')}</span></div>`
  :`<div class="note">Empty. A machine only works with a spirit inside; its ceilings are that spirit's grades.</div>`}</div></div>
  <div class="row" style="margin-top:6px">${s?`<button data-act="transfer" data-id="${v.id}">Spirit out (−${Math.round((1-CONFIG.transferKeep)*100)}% exp)</button>`:`<select data-f="pe" data-id="${v.id}"><option value="">Possess with…</option>${bx.map(x=>`<option value="${x.id}" ${UI.pe.vid===v.id&&UI.pe.sid===x.id?'selected':''}>${esc(x.name)} — ${tempText(x)} · ${v.station.map(k=>k+' '+gradeOf(Math.max(x.v[k],v.floors[k]))).join(', ')}</option>`).join('')}</select><button data-act="possessempty" data-id="${v.id}" ${UI.pe.vid===v.id&&UI.pe.sid?'':'disabled'}>Move in</button>`}</div></div>`;}).join('');
  const t=UI.train;const live=mc.filter(v=>v.spiritId);if(!live.some(v=>v.id===t.id)){t.id=live[0]?live[0].id:'';t.key='';}
