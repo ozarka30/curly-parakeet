@@ -124,7 +124,7 @@ const AFF=['Ember','Frost','Bloom','Clay','Tide'];
 const FEEDS={Bloom:'Ember',Ember:'Clay',Clay:'Frost',Frost:'Tide',Tide:'Bloom'};
 const QUELLS={Ember:'Frost',Frost:'Bloom',Bloom:'Clay',Clay:'Tide',Tide:'Ember'};
 const COLOR={Ember:'#c8362b',Frost:'#4e9fd1',Bloom:'#4f8f3a',Clay:'#c28a2c',Tide:'#2b3f8c',none:'#8a6fb5'};
-let CONFIG={gold:200,toxCap:100,sessionPts:4,expPerIssue:5,outgrow1:40,outgrow2:100,transferKeep:0.7,maxActive:4,newPerIssue:1,trialGain:4,spiritPrice:25,cooldown:6,sessionsFastPace:30,dealerEvery:2,marketSize:3};
+let CONFIG={gold:200,toxCap:100,sessionPts:4,expPerIssue:5,outgrow1:40,outgrow2:100,transferKeep:0.7,maxActive:4,newPerIssue:1,trialGain:4,spiritPrice:25,cooldown:4,sessionsFastPace:30,dealerEvery:2,marketSize:3};
 const NAMES=['Pochi','Tama','Kuro','Momo','Chibi','Goro','Yuki','Kin','Fuku','Hachi','Mame','Nene','Suzu','Taro','Ume'];
 const RARITY={common:{w:6,p:20},uncommon:{w:3,p:35},rare:{w:1,p:80},machine:{w:1,p:45}};
 // Molds are old objects: consumable, found on expeditions or bought from the antique cart. A mold with `station` is a training machine; built, it is installed in the workshop.
@@ -165,21 +165,37 @@ const FOODS={pepper:{n:'Fire pepper',g:'C',v:6,to:['aff','Ember'],side:{k:'tempe
  beans:{n:'Sweet beans',g:'D',v:5,to:['stat','Heart'],side:{k:'mood',amt:4},tox:8,p:7},
  milk:{n:'Warm milk',g:'D',v:5,to:['stat','Heart'],side:{k:'mood',amt:-3},tox:8,p:7},
  tofu:{n:'Chilled tofu',g:'C',v:6,to:['aff','Frost'],side:{k:'mood',amt:-4},tox:10,p:9},
- honey:{n:'Mountain honey',g:'B',v:7,to:['aff','Bloom'],side:{k:'temper',amt:-4},tox:16,p:20,rep:2},
+ honey:{n:'Mountain honey',g:'B',v:7,to:['aff','Bloom'],side:{k:'temper',amt:-4},tox:16,p:20,unlock:1,unlockText:'Mrs. Tokiwa\'s first commission'},
  sake:{n:'Spirit sake',g:'A',v:8,to:['stat','Knack'],side:null,tox:20,rare:1}};
 const LOCS={river:{n:'Riverbank Shallows',lvl:'C',trials:[['Pace',12,'mat:cedar'],['Wits',14,'mat:pearl'],['Brawn',16,'mold:ladle'],['Grit',20,'mat:salt']]},
- kiln:{n:'Old Kiln Hill',lvl:'B',rep:3,trials:[['Grit',24,'mat:shard'],['Knack',26,'mold:claypot'],['Heart',28,'food:sake'],['Wits',32,'mold:bell']]}};
-const CUST={koda:{n:'Kōda',t:'baker, Kōda Pan'},tokiwa:{n:'Mrs. Tokiwa',t:'the widow upstairs'},umeda:{n:'Umeda',t:'fishmonger'},shiraishi:{n:'Shiraishi',t:'bathhouse, Tsuru-no-yu'},noguchi:{n:'Noguchi',t:'schoolteacher'},hana:{n:'Hana',t:'delivery girl'}};
+ kiln:{n:'Old Kiln Hill',lvl:'B',unlock:1,unlockText:'Opens after Umeda\'s first commission',trials:[['Grit',24,'mat:shard'],['Knack',26,'mold:claypot'],['Heart',28,'food:sake'],['Wits',32,'mold:bell']]}};
+const CUST={
+ koda:{n:'Kōda',t:'baker, Kōda Pan',enter:0,ladder:['r1','k2','k3']},
+ shiraishi:{n:'Shiraishi',t:'bathhouse, Tsuru-no-yu',enter:0,ladder:['r4','s2','r7']},
+ umeda:{n:'Umeda',t:'fishmonger',enter:1,ladder:['r2','u2']},
+ tokiwa:{n:'Mrs. Tokiwa',t:'the widow upstairs',enter:2,ladder:['r3','t2']},
+ noguchi:{n:'Noguchi',t:'schoolteacher',enter:3,ladder:['r5','n2','r8']},
+ hana:{n:'Hana',t:'delivery girl',enter:4,ladder:['h1','r6','h3']}};
 const SIT={drafty:'drafty',steamy:'steam everywhere',quiet:'needs quiet',smallgoods:'small goods about',paper:'paper and radios about',away:'owner away all day',rough:'rough use'};
-const REQS=[
- {id:'r1',c:'koda',title:'OVEN GOES COLD BY DAWN',text:'Two hundred degrees at midnight, stone cold by five. Something small enough for the nook by the flue. My daughter helps in the mornings, so nothing that bites.',cons:[['aff','Ember','C'],['size','small'],['temper','Docile']],pay:90,due:4,desire:'warms',hint:'Mie has warm milk before bed.',sit:'drafty',bonus:'food:honey'},
- {id:'r2',c:'umeda',title:'CATCH SPOILS BY NOON',text:'The ice merchant wants the moon for a block. I need something that keeps a tub cold till the lunch rush. While supplies last, hah.',cons:[['aff','Frost','C'],['tag','holds']],pay:110,due:3,desire:'soothes',hint:'The shop cat naps on the counter.',sit:'quiet',bonus:'mat:pearl'},
- {id:'r3',c:'tokiwa',title:'COMPANY FOR THE LONG NIGHTS',text:'Something to sit with me after the radio goes off. Small, and quiet, dear. I can pay a little, and there are always pickles.',cons:[['stat','Heart','C'],['mood','Quiet'],['size','small']],pay:60,due:6,desire:'guides',hint:'She lights a candle for her husband every night.',sit:'quiet',bonus:'food:sake'},
- {id:'r4',c:'shiraishi',title:'FLOORS STICKY BY EVENING',text:'Steam, soap, forty pairs of feet. I want it clean before the night crowd. Quick.',cons:[['tag','cleans'],['stat','Pace','C']],pay:80,due:3,desire:'luck',hint:'Her regulars say the place has had a bad run.',sit:null,bonus:'mat:cedar'},
- {id:'r5',c:'noguchi',title:'LIGHT FOR THE WALK HOME',text:'Night classes end at nine. The bridge is unlit and the wind off the river is, I am told, brisk. Something that glows and notices things.',cons:[['tag','glows'],['stat','Wits','C']],pay:75,due:4,desire:'guides',hint:'He keeps losing his glasses.',sit:'drafty',bonus:'mat:charcoal'},
- {id:'r6',c:'hana',title:'CARRY THE MORNING ROUND',text:'Forty bottles, twenty papers, before six. The thing has to carry and it has to keep up. I am not slowing down for it.',cons:[['tag','carries'],['stat','Pace','B'],['stat','Grit','C']],pay:120,due:5,desire:'Lively',hint:'She whistles the whole route.',sit:'rough',bonus:'mat:salt'},
- {id:'r7',c:'shiraishi',title:'BIG BATH GOES LUKEWARM',text:'The fire is out by ten and the bath is tepid by midnight. Keep it hot. Keep it steady. I will pay properly.',cons:[['aff','Ember','B'],['aff','Tide','C'],['temper','Steady']],pay:260,due:8,desire:'Lively',hint:'She loves a lively room.',sit:'steamy',minRep:6,bonus:'mat:slag'},
- {id:'r8',c:'noguchi',title:'KEEP FORTY CHILDREN IN LINE',text:'A bell for the classroom. It must be heard at the back and it must be silent the rest of the hour. I realise the contradiction.',cons:[['tag','rings'],['stat','Wits','B'],['mood','Quiet']],pay:150,due:6,desire:'guides',hint:'Glasses again.',sit:'quiet',minRep:4,bonus:'mat:moonsilver'}];
+// Each customer climbs a ladder of commissions; a rung posts when the one before is delivered. `unlock` is a concrete reward.
+const REQ={
+ r1:{c:'koda',title:'OVEN GOES COLD BY DAWN',text:'Two hundred degrees at midnight, stone cold by five. Something small enough for the nook by the flue. My daughter helps in the mornings, so nothing that bites.',cons:[['aff','Ember','C'],['size','small'],['temper','Docile']],pay:90,due:4,desire:'warms',hint:'Mie has warm milk before bed.',sit:'drafty',bonus:'food:honey',unlock:{cart:'teapot'}},
+ k2:{c:'koda',title:'A CREAM CASE FOR THE SUMMER CAKES',text:'The cream slides off by ten in the morning. Something that holds and keeps cold, and that will not startle Mie\'s kitten.',cons:[['aff','Frost','C'],['tag','holds'],['temper','Docile']],pay:120,due:5,desire:'soothes',hint:'Mie hums while she ices the cakes.',sit:'smallgoods',bonus:'mat:iron'},
+ k3:{c:'koda',title:'THE BIG OVEN FOR THE FESTIVAL',text:'Three hundred buns for the shrine festival. The big oven has to run hot for two days straight and not sulk about it.',cons:[['aff','Ember','B'],['stat','Grit','C'],['temper','Steady']],pay:220,due:8,desire:'warms',hint:'He will be up two nights; Mie is bringing him milk.',sit:'drafty',bonus:'mat:slag'},
+ r4:{c:'shiraishi',title:'FLOORS STICKY BY EVENING',text:'Steam, soap, forty pairs of feet. I want it clean before the night crowd. Quick.',cons:[['tag','cleans'],['stat','Pace','C']],pay:80,due:3,desire:'luck',hint:'Her regulars say the place has had a bad run.',sit:null,bonus:'mat:cedar',unlock:{dealer:'hibachi'}},
+ s2:{c:'shiraishi',title:'TOWELS DRY BY MORNING',text:'Forty towels, wet at closing, dry by the first bath. Warm, not hot. Something with a bit of life in it; the drying room is dull.',cons:[['tag','warms'],['aff','Ember','C'],['mood','Lively']],pay:110,due:5,desire:'warms',hint:'She stands in the drying room to warm up after closing.',sit:'steamy',bonus:'mat:cedar'},
+ r7:{c:'shiraishi',title:'BIG BATH GOES LUKEWARM',text:'The fire is out by ten and the bath is tepid by midnight. Keep it hot. Keep it steady. I will pay properly.',cons:[['aff','Ember','B'],['aff','Tide','C'],['temper','Steady']],pay:260,due:8,desire:'Lively',hint:'She loves a lively room.',sit:'steamy',bonus:'mat:slag'},
+ r2:{c:'umeda',title:'CATCH SPOILS BY NOON',text:'The ice merchant wants the moon for a block. I need something that keeps a tub cold till the lunch rush. While supplies last, hah.',cons:[['aff','Frost','C'],['tag','holds']],pay:110,due:3,desire:'soothes',hint:'The shop cat naps on the counter.',sit:'quiet',bonus:'mat:pearl',unlock:{loc:'kiln'}},
+ u2:{c:'umeda',title:'THE ICE MERCHANT DOUBLED HIS PRICE',text:'Twice the price for half the block. I am done with him. I need something that keeps a whole tub at frost, quietly; the cat is nervous.',cons:[['aff','Frost','B'],['tag','holds'],['mood','Quiet']],pay:170,due:6,desire:'soothes',hint:'The cat sleeps on whatever hums.',sit:'quiet',bonus:'mat:moonsilver'},
+ r3:{c:'tokiwa',title:'COMPANY FOR THE LONG NIGHTS',text:'Something to sit with me after the radio goes off. Small, and quiet, dear. I can pay a little, and there are always pickles.',cons:[['stat','Heart','C'],['mood','Quiet'],['size','small']],pay:60,due:6,desire:'guides',hint:'She lights a candle for her husband every night.',sit:'quiet',bonus:'food:sake',unlock:{food:'honey'}},
+ t2:{c:'tokiwa',title:'SOMETHING THAT WON\'T SULK',text:'The last one moped whenever I went to market. I am out most afternoons now, dear. Something that comforts and does not mind being left.',cons:[['tag','comforts'],['stat','Heart','C'],['mood','Quiet']],pay:100,due:6,desire:'warms',hint:'She has started taking tea in the afternoons.',sit:'away',bonus:'food:sake'},
+ r5:{c:'noguchi',title:'LIGHT FOR THE WALK HOME',text:'Night classes end at nine. The bridge is unlit and the wind off the river is, I am told, brisk. Something that glows and notices things.',cons:[['tag','glows'],['stat','Wits','C']],pay:75,due:4,desire:'guides',hint:'He keeps losing his glasses.',sit:'drafty',bonus:'mat:charcoal',unlock:{dealer:'icechest'}},
+ n2:{c:'noguchi',title:'A LANTERN FOR THE NIGHT CLASS',text:'Something that glows through a whole lesson and notices when the back row stops copying. It must last; the room is cold.',cons:[['tag','glows'],['stat','Wits','C'],['stat','Grit','C']],pay:120,due:6,desire:'guides',hint:'He has lost his glasses twice this week.',sit:'drafty',bonus:'mold:lantern'},
+ r8:{c:'noguchi',title:'KEEP FORTY CHILDREN IN LINE',text:'A bell for the classroom. It must be heard at the back and it must be silent the rest of the hour. I realise the contradiction.',cons:[['tag','rings'],['stat','Wits','B'],['mood','Quiet']],pay:150,due:6,desire:'guides',hint:'Glasses again.',sit:'quiet',bonus:'mat:moonsilver'},
+ h1:{c:'hana',title:'KEEP UP WITH THE CART',text:'Milk at five, papers at six. It carries, it keeps up, it does not complain. I am not slowing down for it.',cons:[['tag','carries'],['stat','Pace','C']],pay:95,due:5,desire:'Lively',hint:'She whistles the whole route.',sit:'rough',bonus:'food:potato'},
+ r6:{c:'hana',title:'CARRY THE MORNING ROUND',text:'Forty bottles, twenty papers, before six. The thing has to carry and it has to keep up. I am not slowing down for it.',cons:[['tag','carries'],['stat','Pace','B'],['stat','Grit','C']],pay:120,due:5,desire:'Lively',hint:'She whistles the whole route.',sit:'rough',bonus:'mat:salt'},
+ h3:{c:'hana',title:'THE ROUND CROSSES THE RIVER',text:'New route: the ferry is out and the ford is the way. The thing has to carry, keep up, and not mind getting wet.',cons:[['tag','carries'],['stat','Pace','B'],['aff','Tide','C']],pay:180,due:7,desire:'Lively',hint:'She sings on the ford.',sit:'rough',bonus:'mold:bucket'}};
+const unlockText=u=>!u?'':u.cart?MOLDS[u.cart].name+' always on Sasaki\'s cart':u.dealer?MOLDS[u.dealer].name+' always on the dealer\'s cart':u.loc?LOCS[u.loc].n+' opens':u.food?FOODS[u.food].n+' at the grocer':'';
 
 const band=t=>t<=-5?'Docile':t>=5?'Fierce':'Steady', mband=m=>m<=-5?'Quiet':m>=5?'Lively':'Even';
 const rnd=(a,b)=>a+Math.floor(Math.random()*(b-a+1)), pick=a=>a[rnd(0,a.length-1)];
@@ -190,11 +206,12 @@ const itemName=c=>{const [k,id]=c.split(':');return k==='mat'?MATS[id].n:k==='fo
 
 let G=null;
 function newGame(){G={issue:1,gold:CONFIG.gold,rep:0,inv:{mat:{wax:1,straw:1,water:1},food:{potato:2},mix:{},mold:{candle:1,whisk:1}},spirits:{},vessels:{},n:1,
- requests:[],sold:[],exped:null,stock:null,log:[],done:{},disc:{},deliveries:0,tut:0};
+ requests:[],sold:[],exped:null,stock:null,log:[],done:{},disc:{},deliveries:0,tut:0,cust:{},unl:{cart:[],dealer:[],loc:[],food:[]}};
+ for(const c in CUST)G.cust[c]={step:0,ready:0,seen:CUST[c].enter===0?1:0};
  const s=newSpirit({temper:-6,mood:-2});G.spirits[s.id]=s;
  rollStock();// issue 1 is fixed so the tutorial holds
  Object.assign(G.stock,{special:'charcoal',limited:'pearl',soldout:'earth',limitedLeft:1,molds:[{id:'teapot',price:35},{id:'ladle',price:20},{id:'kokeshi',price:20}],dealer:[{id:'treadle',price:45},{id:'hibachi',price:45}]});
- addRequest('r1');addRequest('r4');log('The shop opens. Two requests on the counter, one spirit in the box, two molds on the shelf.');return G;}
+ postRung('koda');postRung('shiraishi');log('The shop opens. Two requests on the counter, one spirit in the box, two molds on the shelf.');return G;}
 const uid=p=>p+(G.n++);
 function log(t){G.log.unshift({i:G.issue,t});if(G.log.length>80)G.log.length=80;}
 function newSpirit(o={}){const v={};STATS.concat(AFF).forEach(k=>v[k]=0);return {id:uid('s'),name:o.name||pick(NAMES),v,exp:0,tox:0,temper:o.temper??rnd(-9,9),mood:o.mood??rnd(-9,9),hist:[],vesselId:null,owner:null};}
@@ -202,9 +219,13 @@ function drawMolds(n,pool){const out=[],ids=pool.slice();for(let i=0;i<n&&ids.le
 const dealerIn=()=>(G.issue-1)%CONFIG.dealerEvery===0;
 function rollStock(){const ids=shuffle(Object.keys(MATS).filter(m=>!MATS[m].rare));G.stock={special:ids[0],limited:ids[1],soldout:ids[2],limitedLeft:1,spirits:[0,1,2].map(()=>({name:pick(NAMES),temper:rnd(-9,9),mood:rnd(-9,9)})),
  molds:drawMolds(CONFIG.marketSize,CREATURE_MOLDS),dealer:dealerIn()?drawMolds(2,MACHINE_MOLDS):[]};
- if(G.tut>=0&&G.tut<=8&&dealerIn()&&!G.stock.dealer.some(m=>m.id==='treadle'))G.stock.dealer.unshift({id:'treadle',price:RARITY.machine.p});}
-function addRequest(id){const t=REQS.find(r=>r.id===id);G.requests.push({...t,uid:uid('q'),due:t.due,cons:t.cons.map(c=>c.slice())});}
-function reqAvailable(){const active=new Set(G.requests.map(r=>r.id));return REQS.filter(r=>!active.has(r.id)&&G.rep>=(r.minRep||0)&&(!G.done[r.id]||G.done[r.id]+CONFIG.cooldown<=G.issue));}
+ if(G.tut>=0&&G.tut<=8&&dealerIn()&&!G.stock.dealer.some(m=>m.id==='treadle'))G.stock.dealer.unshift({id:'treadle',price:RARITY.machine.p});
+ G.unl.cart.forEach(id=>{if(!G.stock.molds.some(m=>m.id===id))G.stock.molds.push({id,price:RARITY[MOLDS[id].rarity].p});});
+ if(dealerIn())G.unl.dealer.forEach(id=>{if(!G.stock.dealer.some(m=>m.id===id))G.stock.dealer.push({id,price:RARITY.machine.p});});}
+function postRung(c){const id=CUST[c].ladder[G.cust[c].step];const t=REQ[id];G.requests.push({...t,id,uid:uid('q'),due:t.due,cons:t.cons.map(x=>x.slice())});}
+const entered=c=>G.deliveries>=CUST[c].enter;
+function readyRungs(){return Object.keys(CUST).filter(c=>entered(c)&&G.cust[c].step<CUST[c].ladder.length&&G.issue>=G.cust[c].ready&&!G.requests.some(r=>r.c===c&&!r.kind));}
+function applyUnlock(u){if(!u)return '';if(u.cart){G.unl.cart.push(u.cart);return 'Sasaki will keep the '+MOLDS[u.cart].name+' mold on the cart from now on.';}if(u.dealer){G.unl.dealer.push(u.dealer);return 'The machine dealer will carry the '+MOLDS[u.dealer].name+' from now on.';}if(u.loc){G.unl.loc.push(u.loc);return LOCS[u.loc].n+' is open on the Travel page.';}if(u.food){G.unl.food.push(u.food);return 'The grocer now stocks '+FOODS[u.food].n+'.';}return '';}
 
 // --- vessels ---
 function buildVessel(mid,mats,mixes){const M=MOLDS[mid],T=TIER[M.tier];const floors={},caps={};
@@ -269,7 +290,7 @@ function train(sid,vid,key){const p=trainPreview(sid,vid,key);if(p.err)return p.
 
 // --- shops ---
 function buyMat(m){const p=matPrice(G,m);if(p==null)return 'Not available';if(G.gold<p)return 'Not enough gold';G.gold-=p;G.inv.mat[m]=(G.inv.mat[m]||0)+1;if(G.stock.limited===m)G.stock.limitedLeft=0;return null;}
-function buyFood(f){const F=FOODS[f];if(F.rare)return 'Not for sale';if(G.rep<(F.rep||0))return 'Needs reputation '+F.rep;if(G.gold<F.p)return 'Not enough gold';G.gold-=F.p;G.inv.food[f]=(G.inv.food[f]||0)+1;return null;}
+function buyFood(f){const F=FOODS[f];if(F.rare)return 'Not for sale';if(F.unlock&&!G.unl.food.includes(f))return 'Not stocked yet: '+F.unlockText;if(G.gold<F.p)return 'Not enough gold';G.gold-=F.p;G.inv.food[f]=(G.inv.food[f]||0)+1;return null;}
 function buyMix(x){if(G.gold<MIX[x].p)return 'Not enough gold';G.gold-=MIX[x].p;G.inv.mix[x]=(G.inv.mix[x]||0)+1;return null;}
 function buySpirit(i){const st=G.stock.spirits[i];if(!st)return 'Gone';if(G.gold<CONFIG.spiritPrice)return 'Not enough gold';G.gold-=CONFIG.spiritPrice;const s=newSpirit(st);G.spirits[s.id]=s;G.stock.spirits.splice(i,1);log('Bought '+s.name+' from the shrine.');return null;}
 function buyMold(id){const e=[...G.stock.molds,...G.stock.dealer].find(m=>m.id===id);if(!e)return 'Not on the cart';if(G.gold<e.price)return 'Not enough gold';G.gold-=e.price;G.inv.mold[id]=(G.inv.mold[id]||0)+1;
@@ -277,10 +298,12 @@ function buyMold(id){const e=[...G.stock.molds,...G.stock.dealer].find(m=>m.id==
 function grantItem(code){if(!code)return '';const [k,id]=code.split(':');if(k==='mat'){G.inv.mat[id]=(G.inv.mat[id]||0)+1;return MATS[id].n;}if(k==='food'){G.inv.food[id]=(G.inv.food[id]||0)+1;return FOODS[id].n;}if(k==='mold'){G.inv.mold[id]=(G.inv.mold[id]||0)+1;return MOLDS[id].name+' mold';}return '';}
 
 // --- requests ---
-function fit(req,v){const s=spiritOf(v);return req.cons.map(c=>{const [t,k,g]=c;let ok=false;
- if(t==='aff'||t==='stat')ok=effVal(v,s,k)>=bandBot(g);else if(t==='size')ok=v.size===k;else if(t==='tag')ok=v.tags.includes(k);else if(t==='species')ok=v.mold===k;
- else if(t==='temper')ok=band(s.temper)===k;else if(t==='mood')ok=mband(s.mood)===k;
+function fitWith(req,v,s){return req.cons.map(c=>{const [t,k,g]=c;let ok=false;
+ if(t==='aff'||t==='stat')ok=Math.min(s?Math.max(s.v[k]||0,v.floors[k]):v.floors[k],v.caps[k])>=bandBot(g);else if(t==='size')ok=v.size===k;else if(t==='tag')ok=v.tags.includes(k);else if(t==='species')ok=v.mold===k;
+ else if(t==='temper')ok=s?band(s.temper)===k:null;else if(t==='mood')ok=s?mband(s.mood)===k:null;
  return {c,ok};});}
+function fit(req,v){return fitWith(req,v,spiritOf(v));}
+function previewSpirit(choice){if(choice&&choice.startsWith('shop:')){const st=G.stock.spirits[+choice.slice(5)];return st?{v:{},temper:st.temper,mood:st.mood}:null;}return choice&&G.spirits[choice]||null;}
 function conText(c){const [t,k,g]=c;if(t==='aff'||t==='stat')return k.toUpperCase()+' ≥ '+g;return k.toUpperCase();}
 function deliver(quid,vid){const r=G.requests.find(q=>q.uid===quid),v=G.vessels[vid],s=spiritOf(v);if(!r||!s)return 'No';
  if(r.spiritReq&&v.spiritId!==r.spiritReq)return 'This customer wants their own spirit back';
@@ -289,11 +312,12 @@ function deliver(quid,vid){const r=G.requests.find(q=>q.uid===quid),v=G.vessels[
  const bonus=r.desire&&(M.gift===r.desire||mband(s.mood)===r.desire||band(s.temper)===r.desire);
  if(bonus){G.rep+=2;const g=grantItem(r.bonus);msg+=' BONUS: the '+(M.gift===r.desire?'gift':'temperament')+' fit. +2 rep'+(g?', '+g:'')+'.';}
  if(r.sit&&M.triggers.includes(r.sit)){G.rep-=1;msg+=' Complaint within the week: it '+M.vice+'. −1 rep.';}
+ if(!r.kind){G.cust[r.c].step++;G.cust[r.c].ready=G.issue+CONFIG.cooldown;}const ut=applyUnlock(r.unlock);if(ut)msg+=' '+ut;
  s.owner=r.c;s.vesselId='sold';s.hist.push('Issue '+G.issue+': went to work for '+CUST[r.c].n+'.');
  G.sold.push({spiritId:s.id,vname:v.name,mold:v.mold,tier:v.tier,c:r.c,cons:r.cons,pay:r.pay,issue:G.issue});
  delete G.vessels[vid];G.requests=G.requests.filter(q=>q.uid!==quid);G.done[r.id]=G.issue;log(msg);return null;}
 function accept(quid){const r=G.requests.find(q=>q.uid===quid);if(r){r.accepted=1;log('Accepted '+r.title+'. No deadline while you work on it.');}}
-function decline(quid){const r=G.requests.find(q=>q.uid===quid);G.requests=G.requests.filter(q=>q.uid!==quid);G.rep-=1;G.done[r.id]=G.issue;log('Declined '+r.title+'. −1 rep.');}
+function decline(quid){const r=G.requests.find(q=>q.uid===quid);G.requests=G.requests.filter(q=>q.uid!==quid);if(!r.kind)G.cust[r.c].ready=G.issue+CONFIG.cooldown;log('Declined '+r.title+'. '+CUST[r.c].n+' will ask again in a few issues.');}
 function bumpCons(cons){const out=cons.filter(c=>c[0]!=='size').map(c=>c.slice());const i=out.findIndex(c=>c[0]==='aff'||c[0]==='stat');if(i>=0)out[i][2]=GR[Math.min(5,gi(out[i][2])+1)];return out;}
 function checkOutgrow(){for(const so of G.sold.slice()){const s=G.spirits[so.spiritId];s.exp+=CONFIG.expPerIssue;const th=so.tier===1?CONFIG.outgrow1:CONFIG.outgrow2;
  if(s.exp>=th){G.sold=G.sold.filter(x=>x!==so);s.vesselId=null;s.owner=null;s.exp=Math.floor(s.exp*CONFIG.transferKeep);s.hist.push('Issue '+G.issue+': outgrew the '+so.vname+' and came home.');
@@ -301,7 +325,7 @@ function checkOutgrow(){for(const so of G.sold.slice()){const s=G.spirits[so.spi
   log(CUST[so.c].n+' is back: '+s.name+' outgrew the '+so.vname+'.');}}}
 
 // --- expeditions ---
-function send(vid,loc){if(G.exped)return 'One expedition at a time';const L=LOCS[loc];if(G.rep<(L.rep||0))return 'Needs reputation '+L.rep;const v=G.vessels[vid];if(!v||!spiritOf(v))return 'Empty';G.exped={vesselId:vid,loc,step:0,haul:[],await:false};log(spiritOf(v).name+' set out for '+L.n+'.');return null;}
+function send(vid,loc){if(G.exped)return 'One expedition at a time';const L=LOCS[loc];if(L.unlock&&!G.unl.loc.includes(loc))return L.unlockText;const v=G.vessels[vid];if(!v||!spiritOf(v))return 'Empty';G.exped={vesselId:vid,loc,step:0,haul:[],await:false};log(spiritOf(v).name+' set out for '+L.n+'.');return null;}
 function pressOn(){if(G.exped)G.exped.await=false;}
 function returnHome(){const e=G.exped;if(!e)return;e.haul.forEach(grantItem);const v=G.vessels[e.vesselId];log(spiritOf(v).name+' came home from '+LOCS[e.loc].n+' with '+(e.haul.length||'no')+' finds.');G.exped=null;}
 function resolveExped(){const e=G.exped;if(!e||e.await)return;const L=LOCS[e.loc],v=G.vessels[e.vesselId],s=spiritOf(v),[stat,th,reward]=L.trials[e.step];
@@ -314,12 +338,13 @@ function resolveExped(){const e=G.exped;if(!e||e.await)return;const L=LOCS[e.loc
 
 // --- the day ---
 function nextIssue(){
- for(const r of G.requests.slice()){if(r.accepted)continue;r.due--;if(r.due<=0){G.requests=G.requests.filter(q=>q!==r);G.rep-=2;G.done[r.id]=G.issue;log('Missed the deadline: '+r.title+'. −2 rep.');}}
+ for(const r of G.requests.slice()){if(r.accepted)continue;r.due--;if(r.due<=0){G.requests=G.requests.filter(q=>q!==r);G.rep-=2;if(!r.kind)G.cust[r.c].ready=G.issue+CONFIG.cooldown;log('Missed the deadline: '+r.title+'. −2 rep. '+CUST[r.c].n+' will ask again later.');}}
  checkOutgrow();resolveExped();G.issue++;Object.values(G.vessels).forEach(v=>v.used=0);rollStock();
- const av=shuffle(reqAvailable());let n=0;while(G.requests.length<CONFIG.maxActive&&n<CONFIG.newPerIssue&&av.length){addRequest(av.shift().id);n++;}
+ for(const c in CUST){if(entered(c)&&!G.cust[c].seen){G.cust[c].seen=1;log(CUST[c].n+' ('+CUST[c].t+') heard about the shop and will be by with a request.');}}
+ const rr=shuffle(readyRungs());let n=0;while(G.requests.length<CONFIG.maxActive&&n<CONFIG.newPerIssue&&rr.length){postRung(rr.shift());n++;}
  log('Issue '+G.issue+' goes to press.'+(dealerIn()?' The machine dealer is in town.':''));}
 function exportState(){return JSON.stringify({CONFIG,G});}
-function importState(txt){const o=JSON.parse(txt);if(!o.G||!o.G.vessels||!o.G.inv||!o.G.inv.mold)throw new Error('pickle is from an older version');CONFIG={...CONFIG,...o.CONFIG};G=o.G;}
+function importState(txt){const o=JSON.parse(txt);if(!o.G||!o.G.vessels||!o.G.inv||!o.G.inv.mold||!o.G.cust)throw new Error('pickle is from an older version');CONFIG={...CONFIG,...o.CONFIG};G=o.G;}
 
 // --- tutorial: steps advance on state, each unlocks tabs ---
 const cleanerPace=()=>Math.max(0,...roster().filter(v=>v.tags.includes('cleans')).map(v=>effVal(v,spiritOf(v),'Pace')));
@@ -336,18 +361,18 @@ const TUT=[
  {tab:'travel',text:'Pace 19 is still D, one point short of C. Send the whisk to the **Riverbank Shallows**: its first trial is a Pace check, and passing one raises the stat. Then **Go to press** to end the issue.',done:()=>G.done.r4||(G.exped&&G.exped.await)||(!G.exped&&cleanerPace()>=20),unlock:['ledger']},
  {tab:'travel',text:'The report is in. The next trial is Wits, and your whisk has none; a failed trial breaks the body. **Return home** with the haul.',done:()=>G.done.r4||!G.exped,unlock:[]},
  {tab:'front',text:'Pace C. Front Page → deliver to Shiraishi. Her hint about a bad run is the whisk\'s gift.',done:()=>!!G.done.r4,unlock:[]},
- {tab:'front',text:'That is the whole loop: read the card, find a mold, build cheap, raise what is missing, deliver. Every tab is open now. Molds come from the cart and from expeditions; machines from the dealer; a machine that meets a customer\'s badges can be sold like anything else. Sold creatures grow and come back for bigger bodies. The Ledger keeps the story and the tuning numbers.',done:()=>false,unlock:[],end:true},
+ {tab:'front',text:'That is the whole loop: read the card, find a mold, build cheap, raise what is missing, deliver. Every tab is open now. Each customer has a ladder of commissions; the street box at the foot of the Front Page shows who is next and what each delivery unlocks. On the coupon, pick an order under **Designing for** and the badges check themselves as you choose. Declining is free; a missed deadline is not.',done:()=>false,unlock:[],end:true},
 ];
 function advanceTut(){if(G.tut==null||G.tut<0)return;while(G.tut<TUT.length&&TUT[G.tut].done())G.tut++;if(G.tut>=TUT.length)G.tut=-1;}
 function unlockedTabs(){if(G.tut==null||G.tut<0)return null;const s=new Set(['front']);for(let i=0;i<G.tut;i++)TUT[i].unlock.forEach(t=>s.add(t));return s;}
-if(typeof module!=='undefined')module.exports={newGame,get G(){return G},CONFIG,MOLDS,MATS,FOODS,LOCS,REQS,RARITY,buildVessel,placeOrder,feed,feedPreview,train,trainPreview,stationInfo,buyMat,buyFood,buySpirit,buyMold,buyMix,fit,deliver,accept,nextIssue,send,pressOn,returnHome,roster,machines,boxSpirits,emptyVessels,possessEmpty,transferOut,salvage,spiritOf,gradeOf,effVal,exportState,importState,checkOutgrow,orderCost,TUT,advanceTut,unlockedTabs,dealerIn};
+if(typeof module!=='undefined')module.exports={newGame,get G(){return G},CONFIG,MOLDS,MATS,FOODS,LOCS,REQ,CUST,RARITY,fitWith,previewSpirit,decline,unlockText,buildVessel,placeOrder,feed,feedPreview,train,trainPreview,stationInfo,buyMat,buyFood,buySpirit,buyMold,buyMix,fit,deliver,accept,nextIssue,send,pressOn,returnHome,roster,machines,boxSpirits,emptyVessels,possessEmpty,transferOut,salvage,spiritOf,gradeOf,effVal,exportState,importState,checkOutgrow,orderCost,TUT,advanceTut,unlockedTabs,dealerIn};
 </script>
 
 <script>
 // ===== UI =====
 const $=s=>document.querySelector(s);
 const TABS=[['front','Front Page'],['order','Order Form'],['specials','Specials'],['workshop','Workshop'],['roster','Roster'],['travel','Travel'],['ledger','Ledger']];
-const UI={tab:'front',pick:{},order:{mold:'',mats:[],mix:'',spirit:''},feed:{vid:'',fid:''},train:{id:'',vid:'',key:''},pe:{vid:'',sid:''},send:{vid:'',loc:'river'},open:{},pickle:''};
+const UI={tab:'front',pick:{},order:{mold:'',mats:[],mix:'',spirit:'',forReq:''},feed:{vid:'',fid:''},train:{id:'',vid:'',key:''},pe:{vid:'',sid:''},send:{vid:'',loc:'river'},open:{},pickle:''};
 const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 function save(){try{localStorage.setItem('yw-save',exportState());}catch(e){}}
 function load(){try{const t=localStorage.getItem('yw-save');if(t){importState(t);return true;}}catch(e){}return false;}
@@ -397,31 +422,39 @@ function render(){
  $('#tut').innerHTML=tutHTML();
  $('#view').innerHTML=({front,order,specials,workshop,roster:rosterTab,travel,ledger})[UI.tab]();}
 
-function front(){if(!G.requests.length)return '<div class="box">No requests this issue. Go to press.</div>';
- return `<div class="grid wide">${G.requests.map(r=>{const C=CUST[r.c];const pk=UI.pick[r.uid];return `<div class="box dbl">
- <div class="row sb"><span class="kick">${esc(C.n)} · ${esc(C.t)}</span>${r.accepted?'<span class="kick">accepted · no deadline</span>':`<span class="kick" style="color:${r.due<=1?'var(--red)':''}">due in ${r.due}</span>`}</div>
+function front(){const cards=G.requests.map(r=>{const C=CUST[r.c];const pk=UI.pick[r.uid];const idx=C.ladder.indexOf(r.id);return `<div class="box dbl">
+ <div class="row sb"><span class="kick">${esc(C.n)} · ${esc(C.t)} · ${r.kind?'follow-up':'commission '+(idx+1)+' of '+C.ladder.length}</span>${r.accepted?'<span class="kick">accepted · no deadline</span>':`<span class="kick" style="color:${r.due<=1?'var(--red)':''}">due in ${r.due}</span>`}</div>
  <div class="hl">${esc(r.title)}</div><div class="copy">“${esc(r.text)}”</div>${r.hint?`<div class="hint">${esc(r.hint)}</div>`:''}
  <div class="badges">${r.cons.map(c=>badge(c)).join('')}${r.sit?`<span class="bd" style="border-style:dashed">${SIT[r.sit]}</span>`:''}</div>
- <div class="row sb"><span class="price">${r.pay}<small>g + rep</small></span><span class="row"><button data-act="decline" data-id="${r.uid}" class="red">Decline</button>${r.accepted?'':`<button data-act="accept" data-id="${r.uid}">Accept</button>`}<button class="pri" data-act="pick" data-id="${r.uid}">${pk?'Hide':'Deliver…'}</button></span></div>
+ ${r.unlock?`<div class="muted" style="font-size:12px">Delivering unlocks: ${unlockText(r.unlock)}.</div>`:''}
+ <div class="row sb" style="margin-top:6px"><span class="price">${r.pay}<small>g budget</small></span><span class="row"><button data-act="decline" data-id="${r.uid}" class="red">Decline</button>${r.accepted?'':`<button data-act="accept" data-id="${r.uid}">Accept</button>`}<button data-act="design" data-id="${r.uid}">Design for this</button><button class="pri" data-act="pick" data-id="${r.uid}">${pk?'Hide':'Deliver…'}</button></span></div>
  ${pk?`<div style="margin-top:8px;border-top:2px dashed var(--ink);padding-top:8px">${roster().map(v=>{const s=spiritOf(v);const f=fit(r,v);const ok=f.every(x=>x.ok)&&(!r.spiritReq||v.spiritId===r.spiritReq);return `<div class="row sb line"><span><b>${esc(s.name)}</b> the ${vlabel(v)}${r.spiritReq&&v.spiritId!==r.spiritReq?' <span class="muted">(not their spirit)</span>':''}</span><span class="badges" style="margin:0">${f.map(x=>badge(x.c,x.ok)).join('')}</span><button class="pri" data-act="deliver" data-id="${r.uid}" data-v="${v.id}" ${ok?'':'disabled'}>Hand over</button></div>`}).join('')||'<span class="muted">Nothing on the shelf.</span>'}</div>`:''}
- </div>`}).join('')}</div>`;}
+ </div>`}).join('');
+ return (G.requests.length?`<div class="grid wide">${cards}</div>`:'<div class="box">No requests this issue. Go to press; the street box below says who is coming.</div>')+streetHTML();}
+function streetHTML(){return `<div class="box" style="margin-top:12px"><div class="kick">On the street · who is next</div>${Object.keys(CUST).map(c=>{const C=CUST[c],S=G.cust[c];const active=G.requests.find(r=>r.c===c&&!r.kind);const next=C.ladder[S.step];let st;
+ if(!entered(c))st=`comes by after ${C.enter} deliver${C.enter===1?'y':'ies'} (${G.deliveries} so far)`;else if(active)st=`on the board: ${esc(active.title)}`;else if(!next)st='ladder complete';else st=`next: ${esc(REQ[next].title)}${G.issue<S.ready?' · asks again in '+(S.ready-G.issue)+' issue'+(S.ready-G.issue>1?'s':''):' · coming next issue'}`;
+ return `<div class="row sb line"><span><b>${esc(C.n)}</b> <span class="muted">${S.step}/${C.ladder.length} done</span></span><span class="muted" style="font-size:12px">${st}</span></div>`}).join('')}</div>`;}
 
 function order(){const o=UI.order;const owned=Object.keys(G.inv.mold).filter(m=>G.inv.mold[m]>0);if(!owned.includes(o.mold))o.mold=owned[0]||'';
  if(!o.mold)return `<div class="box dbl"><div class="kick">Mail-order coupon</div><div class="hl big">No molds in stock</div><p>A mold is an old object a spirit can live in, and it is used up when you build. Sasaki's antique cart on the Specials page sells a few each issue; expeditions turn up rarer ones; the machine dealer brings training machines every other issue.</p></div>`;
  const M=MOLDS[o.mold],T=TIER[M.tier];const slots=T.mat+(o.mix==='lacing'?1:0);o.mats=o.mats.slice(0,slots);
- const prev=buildVessel(o.mold,o.mats.filter(Boolean),o.mix?[o.mix]:[]);const cost=orderCost(o.mold,o.mats.filter(Boolean),o.mix?[o.mix]:[],o.spirit);
- const matOpt=(m,i)=>{const MM=MATS[m];const own=G.inv.mat[m]||0;const p=matPrice(G,m);const lab=own?`owned ×${own}`:p==null?(MM.rare?'not in stock':'SOLD OUT'):p+'g'+(G.stock.special===m?' SPECIAL':'')+(G.stock.limited===m?' LIMIT 1':'');return `<option value="${m}" ${o.mats[i]===m?'selected':''} ${(!own&&p==null)?'disabled':''}>${MM.n} — ${MM.a} ${MM.g} — ${lab}</option>`;};
+ const req=G.requests.find(r=>r.uid===o.forReq)||null;if(!req)o.forReq='';const want=new Set(req?req.cons.filter(c=>c[0]==='aff').map(c=>c[1]):[]);
+ const prev=buildVessel(o.mold,o.mats.filter(Boolean),o.mix?[o.mix]:[]);const cost=orderCost(o.mold,o.mats.filter(Boolean),o.mix?[o.mix]:[],o.spirit);const pf=req?fitWith(req,prev,previewSpirit(o.spirit)):null;
+ const matOpt=(m,i)=>{const MM=MATS[m];const own=G.inv.mat[m]||0;const p=matPrice(G,m);const lab=own?`owned ×${own}`:p==null?(MM.rare?'not in stock':'SOLD OUT'):p+'g'+(G.stock.special===m?' SPECIAL':'')+(G.stock.limited===m?' LIMIT 1':'');return `<option value="${m}" ${o.mats[i]===m?'selected':''} ${(!own&&p==null)?'disabled':''}>${want.has(MM.a)?'★ ':''}${MM.n} — ${MM.a} ${MM.g} — ${lab}</option>`;};
+ const matKeys=Object.keys(MATS).sort((a,b)=>(want.has(MATS[b].a)?1:0)-(want.has(MATS[a].a)?1:0));
  const sp=boxSpirits();const spOpt=sp.map(s=>`<option value="${s.id}" ${o.spirit===s.id?'selected':''}>${esc(s.name)} (box) — ${tempText(s)}</option>`).join('')+G.stock.spirits.map((s,i)=>`<option value="shop:${i}" ${o.spirit==='shop:'+i?'selected':''}>${esc(s.name)} (shrine, ${CONFIG.spiritPrice}g) — ${band(s.temper)} · ${mband(s.mood)}</option>`).join('');
  return `<div class="two"><div class="box dbl"><div class="kick">Mail-order coupon · fill in and send</div><div class="hl big">Build a vessel</div>
  <div class="form">
+ <label>Designing for <select data-f="forReq"><option value="">— no particular order —</option>${G.requests.map(r=>`<option value="${r.uid}" ${o.forReq===r.uid?'selected':''}>${esc(CUST[r.c].n)}: ${esc(r.title)} (budget ${r.pay}g)</option>`).join('')}</select></label>
  <label>Mold (from your stock) <select data-f="mold">${owned.map(m=>`<option value="${m}" ${o.mold===m?'selected':''}>${MOLDS[m].name} ×${G.inv.mold[m]} — ${MOLDS[m].station?'machine: trains '+MOLDS[m].station.join(' + '):(MOLDS[m].native||'no native')+' · '+MOLDS[m].tags.join(', ')} — ${MOLDS[m].size||TIER[MOLDS[m].tier].size}</option>`).join('')}</select></label>
- ${Array.from({length:slots},(_,i)=>`<label>Material ${i+1}${i>=T.mat?' (lacing)':''} <select data-f="mat" data-i="${i}"><option value="">— none —</option>${Object.keys(MATS).map(m=>matOpt(m,i)).join('')}</select></label>`).join('')}
+ ${Array.from({length:slots},(_,i)=>`<label>Material ${i+1}${i>=T.mat?' (lacing)':''} <select data-f="mat" data-i="${i}"><option value="">— none —</option>${matKeys.map(m=>matOpt(m,i)).join('')}</select></label>`).join('')}
  <label>Mix-in <select data-f="mix"><option value="">— none —</option>${Object.keys(MIX).map(x=>`<option value="${x}" ${o.mix===x?'selected':''}>${MIX[x].n} — ${MIX[x].text} — ${G.inv.mix[x]?'owned ×'+G.inv.mix[x]:MIX[x].p+'g'}</option>`).join('')}</select></label>
  <label>Spirit <select data-f="spirit"><option value="">— leave empty —</option>${spOpt}</select></label>
  </div>
- <div class="receipt">${cost.err?`<div style="color:var(--red)">${cost.err}</div>`:cost.items.map(i=>`<div><span>${esc(i[0])}</span><span>${i[1]}g</span></div>`).join('')+`<div class="tot"><span>TOTAL</span><span>${cost.total}g</span></div>`}</div>
+ <div class="receipt">${cost.err?`<div style="color:var(--red)">${cost.err}</div>`:cost.items.map(i=>`<div><span>${esc(i[0])}</span><span>${i[1]}g</span></div>`).join('')+`<div class="tot"><span>TOTAL</span><span>${cost.total}g</span></div>`+(req?`<div><span>BUDGET (${esc(CUST[req.c].n)})</span><span>${req.pay}g</span></div><div><span>MARGIN before raising</span><span style="color:${req.pay-cost.total<0?'var(--red)':''}">${req.pay-cost.total}g</span></div>`:'')}</div>
  <div class="row" style="margin-top:8px"><button class="pri" data-act="place" ${cost.err?'disabled':''}>Place order</button><span class="muted">Gold on hand: ${G.gold}g</span></div></div>
  <div class="box"><div class="kick">Artist's rendering · floors and caps before any raising</div><div class="hl">${M.name} · ${prev.size}${M.station?' · machine':''}</div>
+ ${pf?`<div class="kick">Against ${esc(CUST[req.c].n)}'s card${o.spirit?'':' · pick a spirit to check temperament'}</div><div class="badges">${pf.map(x=>badge(x.c,x.ok)).join('')}</div>${pf.every(x=>x.ok)?'<div class="note">Meets the card as built. Nothing to raise.</div>':pf.some(x=>x.ok===false&&(x.c[0]==='aff'||x.c[0]==='stat'))?'<div class="note">Short on a grade: a better material, feeding, training or an expedition closes the gap after building.</div>':''}`:''}
  <div class="cre">${svgCreature(prev,null)}<div><div class="muted" style="font-size:12px">${M.station?`Trains ${M.station.join(' + ')}. Installed in the Workshop when built; works only with a spirit inside, up to that spirit's grade. `:''}Gift: ${M.giftText}. Vice: ${M.vice} (${M.triggers.map(t=>SIT[t]).join(', ')}).</div></div></div>
  ${stripHTML(prev,null)}<div class="rel">${prev.rel.length?prev.rel.join(' · '):'No pairs in this vessel'}</div>
  <div class="note">A vessel raises a spirit to its floors, never above. Everything past the floor is feeding, training or expeditions. The mold is used up.</div></div></div>`;}
@@ -439,7 +472,7 @@ function specials(){const st=G.stock;const tag=m=>st.special===m?'<span class="b
  <div class="grid">${Object.keys(MATS).map(m=>{const M=MATS[m];const p=matPrice(G,m);return `<div class="box" style="border-left:8px solid ${COLOR[M.a]}"><div class="row sb"><div><div class="kick">${M.a} · grade ${M.g}${M.rare?' · expedition only':''}</div><div class="hl" style="font-size:16px">${M.n}</div></div>${tag(m)}</div>
  <div class="row sb"><span class="price">${M.rare?'—':p==null?'—':p+'<small>g</small>'}</span><span class="row"><span class="muted">×${G.inv.mat[m]||0}</span><button data-act="buymat" data-id="${m}" ${p==null?'disabled':''}>Buy</button></span></div></div>`}).join('')}</div></div>
  <div class="two"><div class="box"><div class="kick">Grocer's counter</div><div class="hl">Foods</div>${Object.keys(FOODS).map(f=>{const F=FOODS[f];const side=F.side?(F.side.k==='stat'?`${F.side.amt>0?'+':''}${F.side.amt} ${F.side.key}`:F.side.k==='temper'?(F.side.amt>0?'→ Fierce':'→ Docile'):(F.side.amt>0?'→ Lively':'→ Quiet')):'no downside';
- return `<div class="row sb line"><span><b>${F.n}</b> <span class="bd">grade ${F.g}</span><br><span class="muted" style="font-size:12px">+${F.v} ${F.to[1]} · ${side} · tox ${F.tox}</span></span><span class="row"><span class="muted">×${G.inv.food[f]||0}</span>${F.rare?'<span class="muted">rare</span>':`<button data-act="buyfood" data-id="${f}" ${G.rep<(F.rep||0)?'disabled':''}>${F.p}g${F.rep&&G.rep<F.rep?' · rep '+F.rep:''}</button>`}</span></div>`}).join('')}</div>
+ const locked=F.unlock&&!G.unl.food.includes(f);return `<div class="row sb line"><span><b>${F.n}</b> <span class="bd">grade ${F.g}</span><br><span class="muted" style="font-size:12px">+${F.v} ${F.to[1]} · ${side} · tox ${F.tox} · full value up to grade ${F.g}, halved per grade above</span></span><span class="row"><span class="muted">×${G.inv.food[f]||0}</span>${F.rare?'<span class="muted">rare</span>':`<button data-act="buyfood" data-id="${f}" ${locked?'disabled':''} title="${locked?esc(F.unlockText):''}">${F.p}g${locked?' · '+esc(F.unlockText):''}</button>`}</span></div>`}).join('')}</div>
  <div><div class="box" style="margin-bottom:12px"><div class="kick">Odds and ends</div><div class="hl">Mix-ins</div>${Object.keys(MIX).map(x=>`<div class="row sb line"><span><b>${MIX[x].n}</b><br><span class="muted" style="font-size:12px">${MIX[x].text}</span></span><span class="row"><span class="muted">×${G.inv.mix[x]||0}</span><button data-act="buymix" data-id="${x}">${MIX[x].p}g</button></span></div>`).join('')}</div>
  <div class="box"><div class="kick">Shrine · null spirits · temperament as drawn</div><div class="hl">Spirits</div>${st.spirits.map((s,i)=>`<div class="row sb line"><span><b>${esc(s.name)}</b> <span class="muted">${band(s.temper)} · ${mband(s.mood)}</span></span><button data-act="buyspirit" data-id="${i}">${CONFIG.spiritPrice}g</button></div>`).join('')||'<span class="muted">The shrine is out of spirits this issue.</span>'}</div></div></div>`;}
 
@@ -474,16 +507,18 @@ function rosterTab(){const ro=roster();const ev=emptyVessels();const bx=boxSpiri
  <div class="box"><div class="kick">Spirit box</div><div class="hl">Unhoused spirits</div>${bx.map(s=>`<div class="line"><b>${esc(s.name)}</b> <span class="muted">${tempText(s)} · exp ${s.exp} · tox ${s.tox}</span><div class="muted" style="font-size:12px">${STATS.concat(AFF).filter(k=>s.v[k]>0).map(k=>k+' '+s.v[k]).join(', ')||'blank'}</div></div>`).join('')||'<span class="muted">Empty. The shrine sells null spirits.</span>'}</div></div>`;}
 
 function travel(){const e=G.exped;const ro=roster();
- const locs=Object.keys(LOCS).map(id=>{const L=LOCS[id];const d=G.disc[id]||{};return `<div class="box dbl"><div class="kick">Travel section · level ${L.lvl}${L.rep?' · needs rep '+L.rep:''}</div><div class="hl">${L.n}</div>
- <ol style="margin:4px 0 8px 18px;padding:0">${L.trials.map((t,i)=>`<li>${d[i]?`${t[0]} ≥ ${t[1]} → ${itemName(t[2])}`:'<span class="muted">unknown trial</span>'}</li>`).join('')}</ol>
+ const locs=Object.keys(LOCS).map(id=>{const L=LOCS[id];const d=G.disc[id]||{};const open=!L.unlock||G.unl.loc.includes(id);const [st0,th0]=L.trials[0];const sel=UI.send.loc===id&&UI.send.vid?G.vessels[UI.send.vid]:null;const low=sel&&spiritOf(sel)&&effVal(sel,spiritOf(sel),st0)<th0;return `<div class="box dbl" ${open?'':'style="opacity:.7"'}><div class="kick">Travel section · level ${L.lvl}${open?'':' · locked'}</div><div class="hl">${L.n}</div>
+ ${open?'':`<div class="note">${L.unlockText}.</div>`}
+ <ol style="margin:4px 0 8px 18px;padding:0">${L.trials.map((t,i)=>`<li>${d[i]?`${t[0]} ≥ ${t[1]} → ${itemName(t[2])}`:i===0?`<span class="muted">rumor: wants ${t[0]} around grade ${gradeOf(t[1])}</span>`:'<span class="muted">unknown trial</span>'}</li>`).join('')}</ol>
+ ${low?`<div class="note" style="color:var(--red)">${esc(spiritOf(sel).name)}'s ${st0} is ${gradeOf(effVal(sel,spiritOf(sel),st0))}; the first trial wants about ${gradeOf(th0)}. A failed trial breaks the body.</div>`:''}
  <div class="muted" style="font-size:12px">One trial per issue. Gains up to grade ${L.lvl}. A failed trial breaks the body; the spirit comes home with half the haul.</div>
- <div class="row" style="margin-top:6px"><select data-f="send" data-id="${id}"><option value="">Send…</option>${ro.map(v=>`<option value="${v.id}" ${UI.send.loc===id&&UI.send.vid===v.id?'selected':''}>${esc(spiritOf(v).name)} the ${vlabel(v)}</option>`).join('')}</select><button class="pri" data-act="send" data-id="${id}" ${e||!(UI.send.loc===id&&UI.send.vid)||G.rep<(L.rep||0)?'disabled':''}>Set out</button></div></div>`}).join('');
+ <div class="row" style="margin-top:6px"><select data-f="send" data-id="${id}"><option value="">Send…</option>${ro.map(v=>`<option value="${v.id}" ${UI.send.loc===id&&UI.send.vid===v.id?'selected':''}>${esc(spiritOf(v).name)} the ${vlabel(v)}</option>`).join('')}</select><button class="${low?'red':'pri'}" data-act="send" data-id="${id}" ${e||!(UI.send.loc===id&&UI.send.vid)||!open?'disabled':''}>${low?'Set out anyway':'Set out'}</button></div></div>`}).join('');
  const report=e?`<div class="box" style="margin-bottom:12px;border-color:var(--red)"><div class="kick">Field report</div><div class="hl">${esc(spiritOf(G.vessels[e.vesselId]).name)} at ${LOCS[e.loc].n} · trial ${e.step+1} of ${LOCS[e.loc].trials.length}</div>
  <div>Haul so far: ${e.haul.map(itemName).join(', ')||'nothing yet'}</div>
  ${e.await?`<div class="note">Passed. Press on for the next trial, or come home with the haul.</div><div class="row"><button class="pri" data-act="presson">Press on</button><button data-act="return">Return home</button></div>`:'<div class="note">On the road. The next trial resolves when the issue goes to press.</div>'}</div>`:'';
  return report+`<div class="grid wide">${locs}</div>`;}
 
-function ledger(){const cust=Object.keys(CUST).map(c=>{const n=G.sold.filter(s=>s.c===c).length;return `<div class="row sb" style="padding:3px 0;border-bottom:1px dotted #aaa"><span><b>${CUST[c].n}</b> <span class="muted">${CUST[c].t}</span></span><span class="muted">${n} in service</span></div>`}).join('');
+function ledger(){const cust=Object.keys(CUST).map(c=>{const C=CUST[c],S=G.cust[c];const n=G.sold.filter(s=>s.c===c).length;return `<div class="line"><div class="row sb"><span><b>${esc(C.n)}</b> <span class="muted">${esc(C.t)}</span></span><span class="muted">${n} in service${entered(c)?'':' · not yet a customer'}</span></div><div class="badges">${C.ladder.map((id,i)=>{const R=REQ[id];const done=i<S.step,cur=i===S.step;return `<span class="bd ${done?'met':''}" style="${!done&&!cur?'opacity:.45':''}">${i+1}. ${done||cur?esc(R.title):'? ? ?'}${cur&&R.unlock?' · unlocks '+esc(unlockText(R.unlock)):''}</span>`}).join('')}</div></div>`}).join('');
  return `<div class="two"><div><div class="box" style="margin-bottom:12px"><div class="kick">Ledger</div><div class="hl">What happened</div><div class="log">${G.log.map(l=>`<div><b>No.${l.i}</b>${esc(l.t)}</div>`).join('')}</div></div>
  <div class="box"><div class="kick">Customer files</div><div class="hl">The street</div>${cust}<div class="muted" style="margin-top:6px;font-size:12px">Sold creatures gain ${CONFIG.expPerIssue} exp an issue and outgrow a small body at ${CONFIG.outgrow1}, a medium one at ${CONFIG.outgrow2}. Then the customer comes back.</div>
  ${G.sold.map(s=>`<div class="muted" style="font-size:12px">${esc(G.spirits[s.spiritId].name)} the ${s.vname} at ${CUST[s.c].n}'s · exp ${G.spirits[s.spiritId].exp}</div>`).join('')}</div></div>
@@ -502,6 +537,7 @@ document.addEventListener('click',e=>{const b=e.target.closest('[data-act],butto
  if(a==='deliver'){act(()=>deliver(id,b.dataset.v));return;}
  if(a==='decline'){act(()=>{decline(id);});return;}
  if(a==='accept'){act(()=>{accept(id);});return;}
+ if(a==='design'){UI.order.forReq=id;UI.tab='order';render();return;}
  if(a==='place'){const o=UI.order;act(()=>{const e=placeOrder(o.mold,o.mats.filter(Boolean),o.mix?[o.mix]:[],o.spirit);if(!e){o.mats=[];o.mix='';o.spirit='';toast(MOLDS[o.mold]&&MOLDS[o.mold].station?'Built and installed in the Workshop.':'Order placed. See the Roster.');}return e;});return;}
  if(a==='buymat'){act(()=>buyMat(id));return;}if(a==='buyfood'){act(()=>buyFood(id));return;}if(a==='buymix'){act(()=>buyMix(id));return;}if(a==='buyspirit'){act(()=>buySpirit(+id));return;}if(a==='buymold'){act(()=>buyMold(id));return;}
  if(a==='train'){act(()=>train(UI.train.id,UI.train.vid,UI.train.key));return;}
@@ -517,7 +553,7 @@ document.addEventListener('click',e=>{const b=e.target.closest('[data-act],butto
  if(a==='cfg'){try{const c=JSON.parse($('#cfg').value);Object.assign(CONFIG,c);save();toast('Tuning applied');}catch(err){toast('Bad JSON: '+err.message);}render();return;}
 });
 document.addEventListener('change',e=>{const s=e.target;if(!s.dataset.f)return;const f=s.dataset.f,v=s.value;
- if(f==='mold'){UI.order.mold=v;UI.order.mats=[];}else if(f==='mat')UI.order.mats[+s.dataset.i]=v;else if(f==='mix')UI.order.mix=v;else if(f==='spirit')UI.order.spirit=v;
+ if(f==='forReq')UI.order.forReq=v;else if(f==='mold'){UI.order.mold=v;UI.order.mats=[];}else if(f==='mat')UI.order.mats[+s.dataset.i]=v;else if(f==='mix')UI.order.mix=v;else if(f==='spirit')UI.order.spirit=v;
  else if(f==='tst'){UI.train.id=v;UI.train.key='';UI.train.vid='';}else if(f==='tv')UI.train.vid=v;else if(f==='fv')UI.feed.vid=v;else if(f==='ff')UI.feed.fid=v;
  else if(f==='pe')UI.pe={vid:s.dataset.id,sid:v};else if(f==='send')UI.send={loc:s.dataset.id,vid:v};
  render();});
