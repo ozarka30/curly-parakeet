@@ -79,6 +79,18 @@ textarea{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:12px;width:
 .punch{display:flex;gap:4px} .punch i{width:14px;height:14px;border:1.5px solid var(--ink);border-radius:50%;display:inline-block} .punch i.used{background:var(--ink)}
 .cre{display:grid;grid-template-columns:72px 1fr;gap:10px;align-items:start}
 .cre svg{width:72px;height:72px;display:block}
+.cre.big{grid-template-columns:124px 1fr}.cre.big svg{width:124px;height:124px}
+@media (prefers-reduced-motion:no-preference){.cre svg{animation:bob 3.6s ease-in-out infinite}.rvart .lit{animation:lightup .7s ease-out both}.rvart .eye{animation:lightup .4s ease-out both}}
+@keyframes bob{0%,100%{transform:translateY(0)}50%{transform:translateY(-2px)}}@keyframes lightup{from{opacity:0}to{opacity:1}}
+.name{font-family:var(--fd);font-size:26px;line-height:1.05;text-transform:none;letter-spacing:.01em}
+.ep{font-family:var(--fh);text-transform:uppercase;letter-spacing:.1em;font-size:11px;color:var(--ink2)}
+.say{font-style:italic;margin:4px 0 0;color:var(--ink)}
+.nature{font-size:13px;color:var(--ink2);margin:6px 0 2px}
+.reveal{position:fixed;inset:0;background:rgba(28,25,21,.82);display:flex;align-items:center;justify-content:center;padding:16px;z-index:20}
+.rv{background:var(--paper2);border:3px solid var(--ink);outline:1px solid var(--ink);outline-offset:4px;padding:18px 16px;max-width:440px;width:100%;text-align:center;max-height:92vh;overflow:auto}
+.rvart svg{width:min(60vw,220px);height:auto;display:block;margin:6px auto}
+.rv .name{font-size:38px}
+.rv input{font-family:var(--fh);font-size:14px;border:2px solid var(--ink);background:var(--paper2);padding:5px 8px;width:9em;max-width:100%}
 .diary{border-top:1px dashed var(--ink);margin-top:8px;padding-top:6px;font-size:12px;color:var(--ink2)}
 .diary div:before{content:"✦ "}
 .log{font-size:12px;max-height:320px;overflow:auto;border:1px solid var(--ink);padding:6px 8px;background:var(--paper2)}
@@ -266,7 +278,8 @@ function placeOrder(mid,mats,mixes,spiritChoice){const M=MOLDS[mid];if(!M)return
  else if(spiritChoice)sp=G.spirits[spiritChoice];
  if(sp)possess(v,sp);
  log('Made a '+v.name+(v.station?' and installed it in the workshop':'')+(sp?'; '+sp.name+' moved in.':' (empty).')+' Cost '+c.total+'g.');return null;}
-function possess(v,s){STATS.concat(AFF).forEach(k=>{s.v[k]=Math.max(s.v[k],v.floors[k]);});v.spiritId=s.id;s.vesselId=v.id;s.hist.push('Issue '+G.issue+': took the '+v.name+' as a body.');}
+function possess(v,s){STATS.concat(AFF).forEach(k=>{s.v[k]=Math.max(s.v[k],v.floors[k]);});v.spiritId=s.id;s.vesselId=v.id;s.hist.push('Issue '+G.issue+': took the '+v.name+' as a body.');G.lastBorn=v.id;}
+function rename(sid,name){const s=G.spirits[sid];name=String(name||'').trim().slice(0,16);if(!s||!name)return 'Give it a name';const old=s.name;s.name=name;s.hist.push('Issue '+G.issue+': answered to '+name+'.');log(old+' is now called '+name+'.');return null;}
 function spiritOf(v){return v&&v.spiritId?G.spirits[v.spiritId]:null;}
 const effVal=(v,s,k)=>Math.min(s.v[k],v.caps[k]);
 const straining=(v,s)=>STATS.concat(AFF).some(k=>s.v[k]>v.caps[k]);
@@ -379,7 +392,7 @@ const TUT=[
 ];
 function advanceTut(){if(G.tut==null||G.tut<0)return;while(G.tut<TUT.length&&TUT[G.tut].done())G.tut++;if(G.tut>=TUT.length)G.tut=-1;}
 function unlockedTabs(){if(G.tut==null||G.tut<0)return null;const s=new Set(['front']);for(let i=0;i<G.tut;i++)TUT[i].unlock.forEach(t=>s.add(t));return s;}
-if(typeof module!=='undefined')module.exports={newGame,get G(){return G},CONFIG,MOLDS,MATS,FOODS,LOCS,REQ,CUST,RARITY,fitWith,previewSpirit,decline,unlockText,wornIn,scouted,buildVessel,placeOrder,feed,feedPreview,train,trainPreview,stationInfo,buyMat,buyFood,buySpirit,buyMold,buyMix,fit,deliver,accept,nextIssue,send,pressOn,returnHome,roster,machines,boxSpirits,emptyVessels,possessEmpty,transferOut,salvage,spiritOf,gradeOf,effVal,exportState,importState,checkOutgrow,orderCost,TUT,advanceTut,unlockedTabs,dealerIn};
+if(typeof module!=='undefined')module.exports={newGame,get G(){return G},CONFIG,MOLDS,MATS,FOODS,LOCS,REQ,CUST,RARITY,fitWith,previewSpirit,decline,unlockText,wornIn,scouted,rename,buildVessel,placeOrder,feed,feedPreview,train,trainPreview,stationInfo,buyMat,buyFood,buySpirit,buyMold,buyMix,fit,deliver,accept,nextIssue,send,pressOn,returnHome,roster,machines,boxSpirits,emptyVessels,possessEmpty,transferOut,salvage,spiritOf,gradeOf,effVal,exportState,importState,checkOutgrow,orderCost,TUT,advanceTut,unlockedTabs,dealerIn};
 </script>
 
 <script>
@@ -395,12 +408,21 @@ function act(fn){const e=fn();advanceTut();if(e)toast(e);save();render();}
 function tutHTML(){if(G.tut==null||G.tut<0)return '';const T=TUT[G.tut];const txt=esc(T.text).replace(/\*\*(.+?)\*\*/g,'<b>$1</b>');
  return `<div class="box dbl tut"><div class="row sb"><span class="kick">Beginner's column · ${T.end?'the end':'step '+(G.tut+1)+' of '+(TUT.length-1)}</span><span class="row">${T.end?'':`<button data-act="tutgo">Go to ${TABS.find(t=>t[0]===T.tab)[1]}</button>`}<button data-act="tutskip">${T.end?'Close':'Skip tutorial'}</button></span></div><p>${txt}</p></div>`;}
 
-function svgCreature(v,s){const dom=s?AFF.reduce((a,b)=>s.v[b]>s.v[a]?b:a,AFF[0]):null;const col=s&&s.v[dom]>0?COLOR[dom]:COLOR.none;
- const maxv=s?Math.max(...STATS.concat(AFF).map(k=>effVal(v,s,k))):0;const R=REG[v.art];const lit=s?Math.min(R.length,1+Math.floor(maxv/15)):0;
- const fill=i=>i<lit?col:'#f6eedc';const parts=R.map((p,i)=>p.replace(/%F/g,fill(i)));
- const eyes=s?EYES[v.art].map(([x,y])=>`<circle cx="${x}" cy="${y}" r="2.6" fill="#1c1915"/><circle cx="${x+.8}" cy="${y-.8}" r=".8" fill="${col}"/>`).join(''):'';
+function svgCreature(v,s,anim){const val=k=>Math.min(Math.max(s&&s.v[k]||0,v.floors[k]),v.caps[k]);const dom=s?AFF.reduce((a,b)=>val(b)>val(a)?b:a,AFF[0]):null;const col=s&&val(dom)>0?COLOR[dom]:COLOR.none;
+ const maxv=s?Math.max(...STATS.concat(AFF).map(val)):0;const R=REG[v.art];const lit=s?Math.min(R.length,1+Math.floor(maxv/15)):0;const fid='g'+(v.id||'p').replace(/\W/g,'');
+ const part=(p,i)=>{const on=i<lit;const d=anim?`style="animation-delay:${(i*.55).toFixed(2)}s"`:'';return (on?`<g class="lit" ${d} filter="url(#${fid})" opacity=".55">${p.replace(/%F/g,col).replace(/stroke="[^"]*"/g,'')}</g>`:'')+`<g class="${on?'lit':''}" ${on?d:''}>${p.replace(/%F/g,on?col:'#f6eedc')}</g>`;};
+ const [e1,e2]=EYES[v.art];const ed=anim?`style="animation-delay:${(lit*.55).toFixed(2)}s"`:'';
+ const eyes=s?`<g class="eye" ${ed}>${[e1,e2].map(([x,y])=>`<circle cx="${x}" cy="${y}" r="2.6" fill="#1c1915"/><circle cx="${x+.8}" cy="${y-.8}" r=".8" fill="${col}"/>`).join('')}${mouth(v,s,e1,e2)}</g>`:'';
  const ring=v.tier===2?'<rect x="2" y="2" width="60" height="60" fill="none" stroke="#1c1915" stroke-dasharray="3 3"/>':'';
- return `<svg viewBox="0 0 64 64" stroke="#1c1915" stroke-width="2.2" stroke-linejoin="round">${ring}${parts.join('')}${eyes}</svg>`;}
+ return `<svg viewBox="0 0 64 64" stroke="#1c1915" stroke-width="2.2" stroke-linejoin="round"><defs><filter id="${fid}" x="-30%" y="-30%" width="160%" height="160%"><feGaussianBlur stdDeviation="2.2"/></filter></defs>${ring}${R.map(part).join('')}${eyes}</svg>`;}
+function mouth(v,s,[x1,y1],[x2,y2]){const mx=(x1+x2)/2,my=Math.max(y1,y2)+5,w=Math.max(4,(x2-x1)-4);if(s.temper>=5)return `<path d="M${mx-w/2} ${my+1.5} q${w/2} -3 ${w} 0" fill="none" stroke-width="1.6"/>`;if(s.mood>=5)return `<ellipse cx="${mx}" cy="${my}" rx="${w/4}" ry="2" fill="#1c1915"/>`;if(s.mood<=-5)return `<line x1="${mx-w/2}" y1="${my}" x2="${mx+w/2}" y2="${my}" stroke-width="1.6"/>`;return `<path d="M${mx-w/2} ${my-1} q${w/2} 3 ${w} 0" fill="none" stroke-width="1.6"/>`;}
+const ADJ={Ember:'Ember-hearted',Frost:'Frost-touched',Bloom:'Bloom-grown',Clay:'Clay-fired',Tide:'Tide-worn'};const TAIL={Brawn:'the Hauler',Grit:'the Steadfast',Heart:'the Companion',Pace:'the Quick',Wits:'the Watchful',Knack:'the Deft'};
+function epithet(v,s){const val=k=>Math.min(Math.max(s.v[k]||0,v.floors[k]),v.caps[k]);const dom=AFF.reduce((a,b)=>val(b)>val(a)?b:a,AFF[0]);const top=STATS.reduce((a,b)=>val(b)>val(a)?b:a,STATS[0]);return `${val(dom)>0?ADJ[dom]:'Hollow'} ${v.name}, ${TAIL[top]}`;}
+const FIRST={candle:'So. A wick. I can work with a wick.',chime:'Listen. Something is on the road.',whisk:'Dust everywhere. Wonderful.',teapot:'Is there milk? There should be milk.',ladle:'Hum with me, or don\'t; I will hum.',kokeshi:'I will keep watch. Sleep.',hibachi:'Feed me charcoal and I will keep you all night.',washtub:'Bring me the wet ones.',planter:'A sunny corner, please.',wheel:'Everything turns, in the end.',icechest:'Cold is only patience.',treadle:'Left. Right. Left. Keep up.'};
+function says(v,s){if(!s)return '';if(straining(v,s))return 'This body is tight on me.';if(s.tox>=CONFIG.toxCap*0.8)return 'No more food. I have eaten for a lifetime.';if(v.station&&wornIn(v))return 'I have taught all this body can hold.';if(s.hist.length<=1)return FIRST[v.art]||'Well. Here I am.';
+ if(s.temper>=5)return 'Try me.';if(s.mood>=5)return 'What is next? What is next?';if(s.mood<=-5)return '…';if(s.temper<=-5)return 'Whatever you need.';return 'Ready when you are.';}
+const tint=col=>`background:color-mix(in srgb, ${col} 10%, var(--paper2))`;
+const domColor=(v,s)=>{if(!s)return COLOR.none;const val=k=>Math.min(Math.max(s.v[k]||0,v.floors[k]),v.caps[k]);const dom=AFF.reduce((a,b)=>val(b)>val(a)?b:a,AFF[0]);return val(dom)>0?COLOR[dom]:COLOR.none;};
 const REG={candle:['<rect x="16" y="54" width="32" height="6" fill="%F"/>','<rect x="22" y="26" width="20" height="30" rx="3" fill="%F"/>','<ellipse cx="26" cy="30" rx="3" ry="5" fill="%F"/><ellipse cx="38" cy="33" rx="3" ry="6" fill="%F"/>','<path d="M32 6 C25 15 25 20 32 25 C39 20 39 15 32 6 Z" fill="%F"/>'],
  chime:['<path d="M14 36 A18 18 0 0 1 50 36 Z" fill="%F"/>','<rect x="27" y="46" width="10" height="14" fill="%F"/>','<line x1="32" y1="36" x2="32" y2="43"/><circle cx="32" cy="44" r="3.5" fill="%F"/>'],
  whisk:['<rect x="29" y="4" width="6" height="24" fill="%F"/>','<rect x="24" y="28" width="16" height="6" fill="%F"/>','<path d="M20 34 L44 34 L50 58 L14 58 Z" fill="%F"/>'],
@@ -422,19 +444,24 @@ function badge(c,ok){const [t,k]=c;const aff=t==='aff';return `<span class="bd $
 const tempText=s=>`${band(s.temper)} · ${mband(s.mood)}`;
 function therm(val,max,hot){const n=10,on=Math.round(val/max*n);return `<div class="therm" title="${val}/${max}">${Array.from({length:n},(_,i)=>`<i class="${i<on?(hot&&i>=7?'hot':'on'):''}"></i>`).join('')}</div>`;}
 const vlabel=v=>v.name+(v.station?' (machine)':'');
-function creatureCard(v,extra=''){const s=spiritOf(v);const open=UI.open[v.id];return `<div class="box"><div class="cre">${svgCreature(v,s)}<div style="min-width:0"><div class="kick">${v.name} · ${v.size} · ${v.tags.join(', ')}${v.station?' · machine: trains '+v.station.join(' + '):''}</div><div class="hl">${s?esc(s.name):'Empty vessel'}</div>
- ${s?`<div class="muted" style="font-size:12px">${tempText(s)} · exp ${s.exp}${straining(v,s)?' · <span class="stamp" style="font-size:10px;padding:0 4px">straining</span>':''}</div>`:''}</div></div>
- ${stripHTML(v,s)}${s?`<div class="kick">Toxicity ${s.tox}/${CONFIG.toxCap}</div>${therm(s.tox,CONFIG.toxCap,true)}`:''}
+function creatureCard(v,extra=''){const s=spiritOf(v);const open=UI.open[v.id];const M=MOLDS[v.mold];const rn=UI.renaming===v.id;return `<div class="box" style="${s?tint(domColor(v,s)):''}"><div class="cre big">${svgCreature(v,s)}<div style="min-width:0"><div class="kick">${v.name} · ${v.size} · ${v.tags.join(', ')}${v.station?' · machine: trains '+v.station.join(' + '):''}</div>
+ ${s?`<div class="name">${esc(s.name)}</div><div class="ep">${esc(epithet(v,s))} · ${tempText(s)}${straining(v,s)?' · <span class="stamp" style="font-size:10px;padding:0 4px">straining</span>':''}</div><p class="say">“${esc(says(v,s))}”</p>`:'<div class="name" style="color:var(--muted)">Empty vessel</div><div class="ep">no one home</div>'}</div></div>
+ ${s?`<div class="nature">It ${esc(M.giftText)}. But it ${esc(M.vice)}.</div>`:''}
+ ${stripHTML(v,s)}${s?`<div class="kick">Toxicity ${s.tox}/${CONFIG.toxCap} · exp ${s.exp}</div>${therm(s.tox,CONFIG.toxCap,true)}`:''}
  <div class="rel">${v.rel.length?v.rel.join(' · '):'No pairs in this vessel'}${v.mix.length?' · '+v.mix.map(x=>MIX[x].n).join(', '):''}</div>
- <div class="row" style="margin-top:6px">${extra}${s?`<button data-act="open" data-id="${v.id}">${open?'Close':'Diary'}</button>`:''}</div>
+ <div class="row" style="margin-top:6px">${extra}${s?`<button data-act="open" data-id="${v.id}">${open?'Close':'Diary'}</button>${rn?`<input id="rn-${v.id}" value="${esc(s.name)}" maxlength="16"><button class="pri" data-act="rename" data-id="${v.id}">Save</button>`:`<button data-act="renaming" data-id="${v.id}">Rename</button>`}`:''}</div>
  ${open&&s?`<div class="diary">${s.hist.slice().reverse().map(h=>`<div>${esc(h)}</div>`).join('')||'<div>Nothing yet.</div>'}</div>`:''}</div>`;}
+function revealHTML(){const vid=G.lastBorn;if(!vid||G.seenBorn===vid)return '';const v=G.vessels[vid],s=spiritOf(v);if(!v||!s){return '';}
+ return `<div class="reveal" id="reveal"><div class="rv"><div class="kick">The color insert · a spirit takes a body</div><div class="rvart">${svgCreature(v,s,true)}</div><div class="name">${esc(s.name)}</div><div class="ep">${esc(epithet(v,s))} · ${tempText(s)}</div><p class="say">“${esc(says(v,s))}”</p>
+ <div class="nature">It ${esc(MOLDS[v.mold].giftText)}. But it ${esc(MOLDS[v.mold].vice)}.${v.station?' Installed in the Workshop.':''}</div>
+ <div class="row" style="justify-content:center;margin-top:10px"><input id="rn-${v.id}" value="${esc(s.name)}" maxlength="16" aria-label="Name"><button data-act="rename" data-id="${v.id}">Name it</button><button class="pri" data-act="revealclose">Keep</button></div></div></div>`;}
 
 function render(){
  advanceTut();const un=unlockedTabs();if(un&&!un.has(UI.tab))UI.tab='front';const goTab=un&&!TUT[G.tut].end?TUT[G.tut].tab:null;
  $('#strip').innerHTML=`<span>Issue <b>No. ${G.issue}</b></span><span>Gold <b>${G.gold}g</b></span><span>Reputation <b>${G.rep}</b></span><span>Shelf <b>${roster().length}</b></span><span class="sp"></span><button class="pri" data-act="next">Go to press → next issue</button>`;
  $('#tabs').innerHTML=TABS.map(([id,n])=>`<button class="${UI.tab===id?'on':''} ${goTab===id?'go':''}" data-act="tab" data-id="${id}" ${un&&!un.has(id)?'disabled title="Unlocks later in the tutorial"':''}>${n}${id==='front'&&G.requests.length?' ('+G.requests.length+')':''}</button>`).join('');
  $('#tut').innerHTML=tutHTML();
- $('#view').innerHTML=({front,order,specials,workshop,roster:rosterTab,travel,ledger})[UI.tab]();}
+ $('#view').innerHTML=({front,order,specials,workshop,roster:rosterTab,travel,ledger})[UI.tab]()+revealHTML();}
 
 function front(){const cards=G.requests.map(r=>{const C=CUST[r.c];const pk=UI.pick[r.uid];const idx=C.ladder.indexOf(r.id);return `<div class="box dbl">
  <div class="row sb"><span class="kick">${esc(C.n)} · ${esc(C.t)} · ${r.kind?'follow-up':'commission '+(idx+1)+' of '+C.ladder.length}</span>${r.accepted?'<span class="kick">accepted · no deadline</span>':`<span class="kick" style="color:${r.due<=1?'var(--red)':''}">due in ${r.due}</span>`}</div>
@@ -469,7 +496,7 @@ function order(){const o=UI.order;const owned=Object.keys(G.inv.mold).filter(m=>
  <div class="row" style="margin-top:8px"><button class="pri" data-act="place" ${cost.err?'disabled':''}>Place order</button><span class="muted">Gold on hand: ${G.gold}g</span></div></div>
  <div class="box"><div class="kick">Artist's rendering · floors and caps before any raising</div><div class="hl">${M.name} · ${prev.size}${M.station?' · machine':''}</div>
  ${pf?`<div class="kick">Against ${esc(CUST[req.c].n)}'s card${o.spirit?'':' · pick a spirit to check temperament'}</div><div class="badges">${pf.map(x=>badge(x.c,x.ok)).join('')}</div>${pf.every(x=>x.ok)?'<div class="note">Meets the card as built. Nothing to raise.</div>':pf.some(x=>x.ok===false&&(x.c[0]==='aff'||x.c[0]==='stat'))?'<div class="note">Short on a grade: a better material, feeding, training or an expedition closes the gap after building.</div>':''}`:''}
- <div class="cre">${svgCreature(prev,null)}<div><div class="muted" style="font-size:12px">${M.station?`Trains ${M.station.join(' + ')}. Installed in the Workshop when built; works only with a spirit inside, up to that spirit's grade. `:''}Gift: ${M.giftText}. Vice: ${M.vice} (${M.triggers.map(t=>SIT[t]).join(', ')}).</div></div></div>
+ <div class="cre">${svgCreature(prev,previewSpirit(o.spirit))}<div><div class="muted" style="font-size:12px">${M.station?`Trains ${M.station.join(' + ')}. Installed in the Workshop when built; works only with a spirit inside, up to that spirit's grade. `:''}Gift: ${M.giftText}. Vice: ${M.vice} (${M.triggers.map(t=>SIT[t]).join(', ')}).</div></div></div>
  ${stripHTML(prev,null)}<div class="rel">${prev.rel.length?prev.rel.join(' · '):'No pairs in this vessel'}</div>
  <div class="note">A vessel raises a spirit to its floors, never above. Everything past the floor is feeding, training or expeditions. The mold is used up.</div></div></div>`;}
 
@@ -492,7 +519,7 @@ function specials(){const st=G.stock;const tag=m=>st.special===m?'<span class="b
 
 function workshop(){const ro=roster();const mc=machines();const bx=boxSpirits();const opt=(arr,sel,lab)=>arr.map(v=>`<option value="${v.id}" ${sel===v.id?'selected':''}>${lab(v)}</option>`).join('');
  const cards=mc.map(v=>{const I=stationInfo(v.id);const s=I.sp;return `<div class="box"><div class="cre">${svgCreature(v,s)}<div style="min-width:0"><div class="kick">Machine · trains ${v.station.join(' + ')}${v.mats.length?' · '+v.mats.map(m=>MATS[m].n).join(', '):''}</div><div class="hl">${v.name}</div>
- ${s?`<div class="muted" style="font-size:12px">Tended by <b>${esc(s.name)}</b> · ${I.pts} pts a session${wornIn(v)?' · <span class="stamp" style="font-size:10px;padding:0 4px">worn in</span>':''}</div><div class="badges">${v.station.map(k=>`<span class="bd">${k} up to ${gradeOf(I.ceil[k])}</span>`).join('')}${v.env?`<span class="bd" style="border-style:dashed">also → ${v.env.k==='mood'?'Quiet':'Docile'}</span>`:''}</div>${v.station.map(k=>`<div class="kick">${k} wear-in ${effVal(v,s,k)}/${v.caps[k]} · ceiling rises with use</div>${therm(effVal(v,s,k),v.caps[k])}`).join('')}${wornIn(v)?`<div class="note">At its cap. ${MOLDS[v.mold].next?'The dealer carries a '+MOLDS[MOLDS[v.mold].next].name+' now; move this spirit into one to keep its grades.':'Nothing bigger exists yet.'}</div>`:''}<div class="row"><span class="kick">sessions today</span><span class="punch">${Array.from({length:I.sessions},(_,i)=>`<i class="${i<v.used?'used':''}"></i>`).join('')}</span></div>`
+ ${s?`<div class="name" style="font-size:20px">${esc(s.name)}</div><p class="say" style="font-size:12px">“${esc(says(v,s))}”</p><div class="muted" style="font-size:12px">${I.pts} pts a session${wornIn(v)?' · <span class="stamp" style="font-size:10px;padding:0 4px">worn in</span>':''}</div><div class="badges">${v.station.map(k=>`<span class="bd">${k} up to ${gradeOf(I.ceil[k])}</span>`).join('')}${v.env?`<span class="bd" style="border-style:dashed">also → ${v.env.k==='mood'?'Quiet':'Docile'}</span>`:''}</div>${v.station.map(k=>`<div class="kick">${k} wear-in ${effVal(v,s,k)}/${v.caps[k]} · ceiling rises with use</div>${therm(effVal(v,s,k),v.caps[k])}`).join('')}${wornIn(v)?`<div class="note">At its cap. ${MOLDS[v.mold].next?'The dealer carries a '+MOLDS[MOLDS[v.mold].next].name+' now; move this spirit into one to keep its grades.':'Nothing bigger exists yet.'}</div>`:''}<div class="row"><span class="kick">sessions today</span><span class="punch">${Array.from({length:I.sessions},(_,i)=>`<i class="${i<v.used?'used':''}"></i>`).join('')}</span></div>`
  :`<div class="note">Empty. A machine only works with a spirit inside; its ceilings are that spirit's grades.</div>`}</div></div>
  <div class="row" style="margin-top:6px">${s?`<button data-act="transfer" data-id="${v.id}">Spirit out (−${Math.round((1-CONFIG.transferKeep)*100)}% exp)</button>`:`<select data-f="pe" data-id="${v.id}"><option value="">Possess with…</option>${bx.map(x=>`<option value="${x.id}" ${UI.pe.vid===v.id&&UI.pe.sid===x.id?'selected':''}>${esc(x.name)} — ${tempText(x)} · ${v.station.map(k=>k+' '+gradeOf(Math.max(x.v[k],v.floors[k]))).join(', ')}</option>`).join('')}</select><button data-act="possessempty" data-id="${v.id}" ${UI.pe.vid===v.id&&UI.pe.sid?'':'disabled'}>Move in</button>`}</div></div>`;}).join('');
  const t=UI.train;const live=mc.filter(v=>v.spiritId);if(!live.some(v=>v.id===t.id)){t.id=live[0]?live[0].id:'';t.key='';}
@@ -549,6 +576,9 @@ document.addEventListener('click',e=>{const b=e.target.closest('[data-act],butto
  if(a==='next'){act(()=>{nextIssue();UI.pick={};});return;}
  if(a==='pick'){UI.pick[id]=!UI.pick[id];render();return;}
  if(a==='open'){UI.open[id]=!UI.open[id];render();return;}
+ if(a==='renaming'){UI.renaming=id;render();return;}
+ if(a==='rename'){const inp=document.getElementById('rn-'+id);const v=G.vessels[id];act(()=>{const e=rename(v&&v.spiritId,inp?inp.value:'');if(!e)UI.renaming=null;return e;});return;}
+ if(a==='revealclose'){G.seenBorn=G.lastBorn;save();render();return;}
  if(a==='deliver'){act(()=>deliver(id,b.dataset.v));return;}
  if(a==='decline'){act(()=>{decline(id);});return;}
  if(a==='accept'){act(()=>{accept(id);});return;}
