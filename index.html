@@ -39,6 +39,10 @@ textarea{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:12px;width:
 .tabs button{border:0;border-right:1px solid var(--ink);background:none;padding:8px 12px;font-size:12px}
 .tabs button:last-child{border-right:0}
 .tabs button.on{background:var(--ink);color:var(--paper2)}
+.tabs button.go{box-shadow:inset 0 -4px var(--red)}
+.tabs button:disabled{opacity:.3}
+.tut{margin-top:12px;border-left:10px solid var(--red)}
+.tut p{margin:6px 0 0;font-size:15px}
 .view{padding-top:14px}
 .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:12px}
 .grid.wide{grid-template-columns:repeat(auto-fill,minmax(360px,1fr))}
@@ -105,6 +109,7 @@ textarea{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:12px;width:
   </header>
   <div class="strip" id="strip"></div>
   <nav class="tabs" id="tabs"></nav>
+  <div id="tut"></div>
   <main class="view" id="view"></main>
 </div>
 <div id="toast" class="toast" hidden></div>
@@ -140,6 +145,7 @@ const MIX={ash:{n:'Ash insulator',p:40,rule:'mute',text:'mutes every quell in th
 // side: {k:'stat'|'temper'|'mood', key, amt}
 const FOODS={pepper:{n:'Fire pepper',g:'C',v:6,to:['aff','Ember'],side:{k:'temper',amt:4},tox:12,p:10},
  riceball:{n:'Rice ball',g:'D',v:5,to:['stat','Grit'],side:{k:'stat',key:'Pace',amt:-2},tox:8,p:6},
+ potato:{n:'Sweet potato',g:'D',v:5,to:['stat','Pace'],side:{k:'stat',key:'Grit',amt:-2},tox:8,p:6},
  fish:{n:'Dried fish',g:'C',v:6,to:['stat','Brawn'],side:{k:'stat',key:'Wits',amt:-3},tox:10,p:9},
  plum:{n:'Pickled plum',g:'C',v:6,to:['stat','Wits'],side:{k:'stat',key:'Brawn',amt:-3},tox:10,p:9},
  beans:{n:'Sweet beans',g:'D',v:5,to:['stat','Heart'],side:{k:'mood',amt:4},tox:8,p:7},
@@ -174,11 +180,29 @@ const matFloor=m=>bandBot(MATS[m].g), matCap=m=>bandTop(GR[Math.min(5,gi(MATS[m]
 const matPrice=(G,m)=>{const M=MATS[m];if(M.rare)return null;if(G.stock.soldout===m)return null;if(G.stock.limited===m&&!G.stock.limitedLeft)return null;return G.stock.special===m?Math.round(M.p*0.6):M.p};
 
 let G=null;
-function newGame(){G={issue:1,gold:CONFIG.gold,rep:0,inv:{mat:{wax:1,straw:1,water:1},food:{riceball:2},mix:{}},spirits:{},vessels:{},n:1,
- stations:{},requests:[],sold:[],exped:null,stock:null,log:[],done:{},disc:{},deliveries:0};
+function newGame(){G={issue:1,gold:CONFIG.gold,rep:0,inv:{mat:{wax:1,straw:1,water:1},food:{potato:2},mix:{}},spirits:{},vessels:{},n:1,
+ stations:{},requests:[],sold:[],exped:null,stock:null,log:[],done:{},disc:{},deliveries:0,tut:0};
  for(const id in STB)G.stations[id]={owned:STB[id].owned?1:0,spiritId:null,used:0};
  const s=newSpirit({temper:-6,mood:-2});G.spirits[s.id]=s;
- rollStock();addRequest('r1');addRequest('r4');log('The shop opens. Two requests on the counter, one spirit in the box.');return G;}
+ rollStock();Object.assign(G.stock,{special:'charcoal',limited:'pearl',soldout:'earth',limitedLeft:1});// issue 1 is fixed so the tutorial holds
+ addRequest('r1');addRequest('r4');log('The shop opens. Two requests on the counter, one spirit in the box.');return G;}
+// --- tutorial: steps advance on state, each unlocks tabs ---
+const cleanerPace=()=>Math.max(0,...roster().filter(v=>v.tags.includes('cleans')).map(v=>effVal(v,spiritOf(v),'Pace')));
+const TUT=[
+ {tab:'front',text:'Welcome to the shop. Kōda the baker\'s order is on the counter. The badges are the floor you have to meet: EMBER ≥ C, SMALL, DOCILE. Press **Accept** so the clock stops while you work.',done:()=>G.done.r1||G.requests.some(r=>r.id==='r1'&&r.accepted),unlock:['specials']},
+ {tab:'specials',text:'Gokuraku Junk prints its stock every issue. **Charcoal** is on special: grade C Ember, which sets a C floor on its own. Buy one.',done:()=>G.done.r1||G.inv.mat.charcoal>0||Object.values(G.vessels).some(v=>v.mats.includes('charcoal')),unlock:['order']},
+ {tab:'order',text:'Fill in the coupon: mold **Teapot**, material **Charcoal**, the spirit from your box. A candle is the obvious oven-keeper, but read Kōda\'s hint: the teapot\'s gift warms the milk, and a candle gutters in a draft. Watch the strip change as you pick. **Place order**.',done:()=>{const r=G.requests.find(q=>q.id==='r1');return G.done.r1||(r&&roster().some(v=>fit(r,v).every(x=>x.ok)));},unlock:['roster']},
+ {tab:'roster',text:'Your creature is in the color insert. Each cell reads current grade over cap; hover one for the numbers. Now Front Page → **Deliver…** → Hand over to Kōda.',done:()=>!!G.done.r1,unlock:[]},
+ {tab:'front',text:'Paid, plus a bonus for the gift match, and reputation 3 opens medium molds. Shiraishi\'s floors are next: **Accept** her order.',done:()=>G.done.r4||G.requests.some(r=>r.id==='r4'&&r.accepted),unlock:[]},
+ {tab:'order',text:'Mold **Whisk**, material **Rice straw** (you own one), a spirit from the shrine (25g). It sweeps, but its Pace is only D and she wants C.',done:()=>G.done.r4||roster().some(v=>v.tags.includes('cleans')),unlock:['workshop']},
+ {tab:'workshop',text:'Feed the whisk a **Sweet potato**: +5 Pace, and 8 toxicity that never comes back. Then train Pace once at the **Yard**. One session per station per day.',done:()=>G.done.r4||cleanerPace()>=18,unlock:['travel']},
+ {tab:'travel',text:'Pace 18 is still D. Send the whisk to the **Riverbank Shallows**: its first trial is a Pace check, and passing one raises the stat. Then **Go to press** to end the issue.',done:()=>G.done.r4||(G.exped&&G.exped.await)||(!G.exped&&cleanerPace()>=20),unlock:['ledger']},
+ {tab:'travel',text:'The report is in. The next trial is Wits, and your whisk has none; a failed trial breaks the body. **Return home** with the haul.',done:()=>G.done.r4||!G.exped,unlock:[]},
+ {tab:'front',text:'Pace C. Front Page → deliver to Shiraishi. Her hint about a bad run is the whisk\'s gift.',done:()=>!!G.done.r4,unlock:[]},
+ {tab:'front',text:'That is the whole loop: read the card, build cheap, raise what is missing, deliver. Every tab is open now. Reputation unlocks bigger orders, better molds and the Old Kiln Hill; sold creatures grow and come back for bigger bodies; the Ledger keeps the story and the tuning numbers.',done:()=>false,unlock:[],end:true},
+];
+function advanceTut(){if(G.tut==null||G.tut<0)return;while(G.tut<TUT.length&&TUT[G.tut].done())G.tut++;if(G.tut>=TUT.length)G.tut=-1;}
+function unlockedTabs(){if(G.tut==null||G.tut<0)return null;const s=new Set(['front']);for(let i=0;i<G.tut;i++)TUT[i].unlock.forEach(t=>s.add(t));return s;}
 const uid=p=>p+(G.n++);
 function log(t){G.log.unshift({i:G.issue,t});if(G.log.length>80)G.log.length=80;}
 function newSpirit(o={}){const v={};STATS.concat(AFF).forEach(k=>v[k]=0);return {id:uid('s'),name:o.name||pick(NAMES),v,exp:0,tox:0,temper:o.temper??rnd(-9,9),mood:o.mood??rnd(-9,9),hist:[],vesselId:null,owner:null};}
@@ -300,7 +324,7 @@ function nextIssue(){
  log('Issue '+G.issue+' goes to press.');}
 function exportState(){return JSON.stringify({CONFIG,G});}
 function importState(txt){const o=JSON.parse(txt);if(!o.G||!o.G.vessels)throw new Error('bad pickle');CONFIG={...CONFIG,...o.CONFIG};G=o.G;}
-if(typeof module!=='undefined')module.exports={newGame,get G(){return G},CONFIG,FAM,MATS,FOODS,STB,LOCS,REQS,buildVessel,placeOrder,feed,feedPreview,train,trainPreview,possessStation,buyMat,buyFood,buySpirit,fit,deliver,accept,nextIssue,send,pressOn,returnHome,roster,boxSpirits,spiritOf,gradeOf,effVal,exportState,importState,checkOutgrow,orderCost};
+if(typeof module!=='undefined')module.exports={newGame,get G(){return G},CONFIG,FAM,MATS,FOODS,STB,LOCS,REQS,buildVessel,placeOrder,feed,feedPreview,train,trainPreview,possessStation,buyMat,buyFood,buySpirit,fit,deliver,accept,nextIssue,send,TUT,advanceTut,unlockedTabs,buyMix,salvage,pressOn,returnHome,roster,boxSpirits,spiritOf,gradeOf,effVal,exportState,importState,checkOutgrow,orderCost};
 </script>
 
 <script>
@@ -312,7 +336,9 @@ const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',
 function save(){try{localStorage.setItem('yw-save',exportState());}catch(e){}}
 function load(){try{const t=localStorage.getItem('yw-save');if(t){importState(t);return true;}}catch(e){}return false;}
 let toastT;function toast(m){const t=$('#toast');t.textContent=m;t.hidden=false;clearTimeout(toastT);toastT=setTimeout(()=>t.hidden=true,2600);}
-function act(fn){const e=fn();if(e)toast(e);save();render();}
+function act(fn){const e=fn();advanceTut();if(e)toast(e);save();render();}
+function tutHTML(){if(G.tut==null||G.tut<0)return '';const T=TUT[G.tut];const txt=esc(T.text).replace(/\*\*(.+?)\*\*/g,'<b>$1</b>');
+ return `<div class="box dbl tut"><div class="row sb"><span class="kick">Beginner's column · ${T.end?'the end':'step '+(G.tut+1)+' of '+(TUT.length-1)}</span><span class="row">${T.end?'':`<button data-act="tutgo">Go to ${TABS.find(t=>t[0]===T.tab)[1]}</button>`}<button data-act="tutskip">${T.end?'Close':'Skip tutorial'}</button></span></div><p>${txt}</p></div>`;}
 
 function svgCreature(v,s){const F=FAM[v.fam];const dom=s?AFF.reduce((a,b)=>s.v[b]>s.v[a]?b:a,AFF[0]):null;const col=s&&s.v[dom]>0?COLOR[dom]:COLOR.none;
  const maxv=s?Math.max(...STATS.concat(AFF).map(k=>effVal(v,s,k))):0;const R=REG[v.fam];const lit=s?Math.min(R.length,1+Math.floor(maxv/15)):0;
@@ -341,8 +367,10 @@ function creatureCard(v,extra=''){const s=spiritOf(v);const open=UI.open[v.id];r
  ${open&&s?`<div class="diary">${s.hist.slice().reverse().map(h=>`<div>${esc(h)}</div>`).join('')||'<div>Nothing yet.</div>'}</div>`:''}</div>`;}
 
 function render(){
+ advanceTut();const un=unlockedTabs();if(un&&!un.has(UI.tab))UI.tab='front';const goTab=un&&!TUT[G.tut].end?TUT[G.tut].tab:null;
  $('#strip').innerHTML=`<span>Issue <b>No. ${G.issue}</b></span><span>Gold <b>${G.gold}g</b></span><span>Reputation <b>${G.rep}</b></span><span>Shelf <b>${roster().length}</b></span><span class="sp"></span><button class="pri" data-act="next">Go to press → next issue</button>`;
- $('#tabs').innerHTML=TABS.map(([id,n])=>`<button class="${UI.tab===id?'on':''}" data-act="tab" data-id="${id}">${n}${id==='front'&&G.requests.length?' ('+G.requests.length+')':''}</button>`).join('');
+ $('#tabs').innerHTML=TABS.map(([id,n])=>`<button class="${UI.tab===id?'on':''} ${goTab===id?'go':''}" data-act="tab" data-id="${id}" ${un&&!un.has(id)?'disabled title="Unlocks later in the tutorial"':''}>${n}${id==='front'&&G.requests.length?' ('+G.requests.length+')':''}</button>`).join('');
+ $('#tut').innerHTML=tutHTML();
  $('#view').innerHTML=({front,order,specials,workshop,roster:rosterTab,travel,ledger})[UI.tab]();}
 
 function front(){if(!G.requests.length)return '<div class="box">No requests this issue. Go to press.</div>';
@@ -431,6 +459,8 @@ function ledger(){const cust=Object.keys(CUST).map(c=>{const n=G.sold.filter(s=>
 document.addEventListener('click',e=>{const b=e.target.closest('[data-act],button[data-f]');if(!b)return;const id=b.dataset.id,a=b.dataset.act;
  if(b.dataset.f){const f=b.dataset.f,v=b.dataset.v;if(f==='tier'){UI.order.tier=+v;}if(f==='tk'){UI.train.key=v;}render();return;}
  if(a==='tab'){UI.tab=id;render();return;}
+ if(a==='tutskip'){G.tut=-1;save();render();return;}
+ if(a==='tutgo'){UI.tab=TUT[G.tut].tab;render();return;}
  if(a==='next'){act(()=>{nextIssue();UI.pick={};});return;}
  if(a==='pick'){UI.pick[id]=!UI.pick[id];render();return;}
  if(a==='open'){UI.open[id]=!UI.open[id];render();return;}
