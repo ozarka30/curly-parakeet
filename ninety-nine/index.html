@@ -80,10 +80,28 @@ section{margin-top:14px}
 .away{padding-left:18px;margin:8px 0 12px} .away li{margin:4px 0} .away .hot{color:var(--red);font-weight:700}
 .flash{position:fixed;left:50%;top:70px;transform:translateX(-50%);z-index:30;background:var(--ink);color:var(--paper2);font-family:var(--fh);text-transform:uppercase;letter-spacing:.06em;font-size:12px;padding:8px 12px;border:2px solid var(--paper2)}
 summary{cursor:pointer}
+
+.rate{font-family:var(--fh);font-weight:600;font-size:22px;line-height:1;font-variant-numeric:tabular-nums} .rate small{font-size:10px;font-weight:400;letter-spacing:.08em;text-transform:uppercase}
+.mast .rate b{font-size:28px}
+.mat{text-transform:none;font-size:11px;border-left:6px solid var(--c)} .mat.on{background:var(--ink);color:var(--paper2)} .mat.dim{opacity:.7}
+.minis{display:flex;flex-wrap:wrap;gap:6px}
+.mini{display:inline-flex;align-items:center;gap:6px;text-transform:none;letter-spacing:0;font-family:var(--fb);font-size:12px;padding:4px 8px 4px 4px;text-align:left}
+.mini b{font-family:var(--fh);text-transform:uppercase;font-size:13px} .mini.wild{border:2px dashed var(--red)}
+button.house{display:block;width:100%;text-align:left;text-transform:none;letter-spacing:0;font-family:var(--fb);font-size:14px}
+button.house:hover{background:var(--paper2);color:var(--ink)}
+.house.lit{border-color:var(--c);box-shadow:inset 6px 0 0 var(--c),0 0 14px color-mix(in srgb,var(--c) 40%,transparent)}
+.house.dim{box-shadow:inset 6px 0 0 var(--c)} .house.empty{border-style:dashed}
+.house b{font-family:var(--fh);text-transform:uppercase;font-size:15px}
+.frame{display:inline-block;border:1.5px dashed var(--muted);border-radius:4px;opacity:.6}
+.sil{display:inline-flex;align-items:center;gap:0;opacity:.7} .sil svg{margin-left:-8px} .sil small{margin-left:2px;font-family:var(--fh)}
+.rail{margin:2px 0 2px 14px;padding-left:10px;border-left:3px dotted var(--muted);font-family:var(--fh);font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);height:20px;display:flex;align-items:center}
+.rail.feeds{border-left:3px solid var(--bloom);color:var(--bloom)} .rail.quells{border-left:3px double var(--red);color:var(--red)}
+.bd.ok{background:var(--ink);color:var(--paper2)} .bd.bad{border-color:var(--red);color:var(--red)}
+input{font-family:var(--fh);font-size:13px;border:2px solid var(--ink);background:var(--paper2);color:var(--ink);padding:6px}
 </style></head><body><div class="wrap" id="app"></div><div id="modal"></div>
 <script id="engine">
-// Ninety-Nine engine, v2: time starts in seconds and stretches as the game goes. Pure rules, no DOM.
-// Every function takes S (the save) and, where time matters, now (epoch ms). advance(S, now) is the only function that moves time.
+// Ninety-Nine engine, v3: kinds, families and the street formation. Pure rules, no DOM.
+// S is the save; functions take S and, where time matters, now (epoch ms). advance(S, now) is the only function that moves time.
 const SEC=1000,MIN=60e3,H=3600e3;
 const AFF=['Ember','Frost','Bloom','Clay','Tide'];
 const GR=['E','D','C','B','A','S'];
@@ -91,26 +109,30 @@ const gi=v=>Math.max(0,Math.min(5,Math.floor(v/10)));
 const gradeOf=v=>GR[gi(v)];
 const bands=v=>gi(v);
 const askIdx=g=>GR.indexOf(g);
+const FEEDS={Bloom:'Ember',Ember:'Clay',Clay:'Frost',Frost:'Tide',Tide:'Bloom'};
+const QUELLS={Bloom:'Clay',Clay:'Tide',Tide:'Ember',Ember:'Frost',Frost:'Bloom'};
+const MATS={Ember:{n:'Ember wax'},Frost:{n:'River ice'},Bloom:{n:'Rice straw'},Clay:{n:'Red earth'},Tide:{n:'Well water'}};
+const ABIL={light:{n:'Light',text:'+2 light a minute each, wherever they stand'},toll:{n:'Toll',text:'every house +1% each, while housed'},sweep:{n:'Sweep',text:'the two neighbours +3% each, while housed'},steam:{n:'Steam',text:'this house +2% each'},carry:{n:'Carry',text:'road trips shorter and richer, 2–3% each'},comfort:{n:'Comfort',text:'tames twice as fast at home; rep at a house'}};
 const SP={
- candle:{n:'Candle',y:'Rōsoku-bi',a:'Ember',t:1,r:'common',art:'candle',light:1},
- lantern:{n:'Lantern',y:'Chōchin-obake',a:'Ember',t:2,r:'rare',art:'candle',light:2},
- chime:{n:'Wind chime',y:'Fūrin-kozō',a:'Frost',t:1,r:'uncommon',art:'chime'},
- bell:{n:'Bell',y:'Suzu-furunushi',a:'Frost',t:2,r:'rare',art:'chime'},
- whisk:{n:'Whisk',y:'Sasara-bake',a:'Bloom',t:1,r:'common',art:'whisk'},
- broom:{n:'Broom',y:'Hōki-gami',a:'Bloom',t:2,r:'rare',art:'whisk'},
- kokeshi:{n:'Kokeshi',y:'Kokeshi-gami',a:'Bloom',t:1,r:'common',art:'kokeshi',tame:2},
- doll:{n:'Doll',y:'Ichimatsu-onna',a:'Bloom',t:2,r:'rare',art:'kokeshi',tame:2},
- teapot:{n:'Teapot',y:'Kyūsu-bōzu',a:'Clay',t:1,r:'uncommon',art:'teapot'},
- claypot:{n:'Clay pot',y:'Bunbuku-gama',a:'Clay',t:2,r:'rare',art:'teapot'},
- ladle:{n:'Ladle',y:'Hishaku-bake',a:'Tide',t:1,r:'common',art:'ladle'},
- bucket:{n:'Bucket',y:'Tsurube-otoshi',a:'Tide',t:2,r:'rare',art:'ladle'}};
+ candle:{n:'Candle',y:'Rōsoku-bi',fav:'Ember',t:1,r:'common',art:'candle',ab:'light'},
+ lantern:{n:'Lantern',y:'Chōchin-obake',fav:'Ember',t:2,r:'rare',art:'candle',ab:'light'},
+ chime:{n:'Wind chime',y:'Fūrin-kozō',fav:'Frost',t:1,r:'uncommon',art:'chime',ab:'toll'},
+ bell:{n:'Bell',y:'Suzu-furunushi',fav:'Frost',t:2,r:'rare',art:'chime',ab:'toll'},
+ whisk:{n:'Whisk',y:'Sasara-bake',fav:'Bloom',t:1,r:'common',art:'whisk',ab:'sweep'},
+ broom:{n:'Broom',y:'Hōki-gami',fav:'Bloom',t:2,r:'rare',art:'whisk',ab:'sweep'},
+ teapot:{n:'Teapot',y:'Kyūsu-bōzu',fav:'Clay',t:1,r:'uncommon',art:'teapot',ab:'steam'},
+ claypot:{n:'Clay pot',y:'Bunbuku-gama',fav:'Clay',t:2,r:'rare',art:'teapot',ab:'steam'},
+ ladle:{n:'Ladle',y:'Hishaku-bake',fav:'Tide',t:1,r:'common',art:'ladle',ab:'carry'},
+ bucket:{n:'Bucket',y:'Tsurube-otoshi',fav:'Tide',t:2,r:'rare',art:'ladle',ab:'carry'},
+ kokeshi:{n:'Kokeshi',y:'Kokeshi-gami',fav:'Bloom',t:1,r:'common',art:'kokeshi',ab:'comfort'},
+ doll:{n:'Doll',y:'Ichimatsu-onna',fav:'Bloom',t:2,r:'rare',art:'kokeshi',ab:'comfort'}};
 const RW={common:6,uncommon:3,rare:1};
 const CAPS={1:{nat:29,oth:19},2:{nat:39,oth:29}};
-const caps=sp=>{const o={};AFF.forEach(a=>o[a]=a===SP[sp].a?CAPS[SP[sp].t].nat:CAPS[SP[sp].t].oth);return o;};
-// rate is gold per minute (paid every second); cyc is the cycle in seconds; crep is rep per finished cycle (about 2 rep a minute at every tier).
+const caps=sp=>{const o={};AFF.forEach(a=>o[a]=a===SP[sp].fav?CAPS[SP[sp].t].nat:CAPS[SP[sp].t].oth);return o;};
+// rate is gold a minute per working unit; cyc the cycle in seconds; crep rep per finished cycle.
 const HOUSES=[
- {h:1,n:"Kōda's bakery",p:'the oven goes cold by dawn',a:'Ember',ask:'D',tier:1,rate:2,cyc:30,crep:1,rep:0},
- {h:2,n:'Mrs. Tokiwa, upstairs',p:'company for the long nights',a:'Bloom',ask:'D',tier:1,rate:2,cyc:30,crep:1,rep:0},
+ {h:1,n:'Mrs. Tokiwa, upstairs',p:'company for the long nights',a:'Bloom',ask:'D',tier:1,rate:2,cyc:30,crep:1,rep:0},
+ {h:2,n:"Kōda's bakery",p:'the oven goes cold by dawn',a:'Ember',ask:'D',tier:1,rate:2,cyc:30,crep:1,rep:0},
  {h:3,n:"Umeda's fish stall",p:'the catch spoils by noon',a:'Frost',ask:'D',tier:1,rate:2.4,cyc:30,crep:1,rep:10},
  {h:4,n:'Tsuru-no-yu bathhouse',p:'the big bath goes lukewarm',a:'Ember',ask:'C',tier:2,rate:5,cyc:300,crep:10,rep:100},
  {h:5,n:"Hana's delivery cart",p:'the round crosses the river',a:'Tide',ask:'C',tier:2,rate:5,cyc:300,crep:10,rep:100},
@@ -119,10 +141,9 @@ const HOUSES=[
  {h:8,n:'The shrine on the hill',p:'the lamps must not go out',a:'Ember',ask:'B',tier:3,rate:12,cyc:1800,crep:60,rep:3000}];
 const ROADS={river:{n:'Riverbank Shallows',a:'Tide'},kiln:{n:'Old Kiln Hill',a:'Clay'},pass:{n:'Mountain Pass',a:'Frost'}};
 const DEPTH=[{sec:20,ask:'D',gold:5,body:.2,wild:0,grow:3,wildness:30},{sec:180,ask:'C',gold:40,body:.4,wild:.1,grow:6,wildness:60},{sec:1800,ask:'B',gold:300,body:.7,wild:.25,grow:10,wildness:90},{sec:14400,ask:'A',gold:1500,body:1,wild:.5,grow:15,wildness:120}];
-const SLOTS=[60,300,1500,7500,37500,150000];// price of slot 3..8
-const CAPUP={4:[8,1000],8:[12,5000]};// offline cap hours -> [next hours, price]
-const SELL={1:75,2:600};
-const CFG={sitBase:5,sitGrow:1.05,costBase:10,costGrow:1.05,fuseFirst:300,fuseBase:120,fuseGrow:1.05,light:12,tame:12,wildBase:30,grow:3600,food:12,foodGain:6,stray:300,strayRep:1,roadRep:1000,t2rep:600,card:5*MIN,basement:99};
+const MILE=[10,25,50,100,200];
+const CFG={sitBase:5,sitGrow:1.05,costBase:10,costGrow:1.05,fuseFirst:300,fuseBase:120,fuseGrow:1.05,light:6,tap:2,awaken:10,tame:12,wildBase:30,grow:3600,food:12,foodGain:6,mat:4,matGrow:1.1,scrapGrow:1.1,scrapT2:1000,t2rep:100,stray:300,strayRep:1,roadRep:1000,card:5*MIN,basement:99,
+ cap:{4:[8,120,500],8:[12,360,2000]}};// cap hours -> [next hours, minutes of income, floor price]
 const NAMES=['Pochi','Tama','Kuro','Momo','Chibi','Goro','Yuki','Kin','Fuku','Hachi','Mame','Nene','Suzu','Taro','Ume','Koro','Hime','Sora','Riku','Nori'];
 
 function rand(S){let t=S.rng=(S.rng+0x6D2B79F5)|0;t=Math.imul(t^t>>>15,t|1);t^=t+Math.imul(t^t>>>7,t|61);return((t^t>>>14)>>>0)/4294967296;}
@@ -131,148 +152,170 @@ function pickSp(S,tier){const ids=Object.keys(SP).filter(k=>!tier||SP[k].t===tie
 const uid=(S,p)=>p+(S.n++);
 function log(S,t,text){S.log.unshift({t,text});if(S.log.length>100)S.log.length=100;}
 function newBody(S,sp){const id=uid(S,'b');S.bodies[id]={sp};return id;}
-function newSpirit(S,sp,wildness,t){const id=uid(S,'s');const v={};AFF.forEach(a=>v[a]=0);v[SP[sp].a]=10;
- const s={id,name:NAMES[rint(S,0,NAMES.length-1)],yokai:SP[sp].y,v,wild:wildness||0,cycles:{},body:newBody(S,sp),loc:{k:'home'},born:t};S.spirits[id]=s;return s;}
+function newKind(S,sp,aff,wildness,t,bid){const sid=uid(S,'s'),tid=uid(S,'k');const v={};AFF.forEach(a=>v[a]=0);v[aff]=10;
+ const s={id:sid,name:NAMES[rint(S,0,NAMES.length-1)],yokai:SP[sp].y,v,wild:wildness||0,body:bid||newBody(S,sp),loc:{k:'home'},born:t,tid};S.spirits[sid]=s;
+ const T={id:tid,name:s.name,sp,aff,sid,count:1,post:null,cycles:{},born:t,roll:[]};S.kinds[tid]=T;return T;}
 
 // --- derived ---
-const spOf=(S,s)=>s.body?S.bodies[s.body].sp:null;
-const all=S=>Object.values(S.spirits);
-const atHome=S=>all(S).filter(s=>s.body&&s.loc.k==='home');
-const outCount=S=>all(S).filter(s=>s.loc.k==='house'||s.loc.k==='road').length;
-const wildAtHome=S=>atHome(S).filter(s=>s.wild>0).length;
-const isLight=(S,s)=>!!(s.body&&SP[spOf(S,s)].light);
-const lightMakers=S=>atHome(S).filter(s=>s.wild===0&&isLight(S,s));
+const kinds=S=>Object.values(S.kinds);
+const orig=(S,T)=>S.spirits[T.sid];
+const spirits=S=>Object.values(S.spirits);
+const isWild=(S,T)=>orig(S,T).wild>0;
+const origAway=(S,T)=>{const o=orig(S,T);return o.loc.k==='road'||!o.body;};
+const units=(S,T)=>isWild(S,T)?0:T.count-(origAway(S,T)?1:0);
+const lightUnits=(S,T)=>isWild(S,T)?0:T.count-(orig(S,T).body?0:1);
+const kindAt=(S,h)=>kinds(S).find(T=>T.post&&T.post.h===h)||null;
+const homeKinds=S=>kinds(S).filter(T=>!T.post);
+const shelf=S=>Object.keys(S.bodies).filter(b=>!spirits(S).some(s=>s.body===b));
 const basementLeft=S=>S.basement.order.length-S.basement.next;
 const sitCost=S=>Math.floor(CFG.costBase*Math.pow(CFG.costGrow,S.basement.next));
 const sitSec=S=>Math.round(CFG.sitBase*Math.pow(CFG.sitGrow,S.basement.next));
 const fuseMsFor=S=>Math.round(S.basement.next===0?CFG.fuseFirst:CFG.fuseBase*Math.pow(CFG.fuseGrow,S.basement.next))*SEC;
 const wildnessFor=n=>CFG.wildBase+n;
-const lightCeiling=S=>20+(basementLeft(S)>0?sitCost(S):0)+10*lightMakers(S).length;
-const lightRate=S=>CFG.light*(1+lightMakers(S).reduce((t,s)=>t+bands(s.v.Ember)*SP[spOf(S,s)].light,0));// per minute
-const occupant=(S,h)=>all(S).find(s=>s.loc.k==='house'&&s.loc.h===h)||null;
-const shelf=S=>Object.keys(S.bodies).filter(b=>!all(S).some(s=>s.body===b));
-const box=S=>all(S).filter(s=>!s.body);
-const bestBand=s=>Math.max(...AFF.map(a=>bands(s.v[a])));
+const tier=T=>SP[T.sp].t;
+const abil=T=>SP[T.sp].ab;
+const lightRate=S=>CFG.light+kinds(S).filter(T=>abil(T)==='light').reduce((t,T)=>t+2*tier(T)*lightUnits(S,T),0);// per minute
+const lightCeiling=S=>(basementLeft(S)>0?sitCost(S):0)+100+2*kinds(S).filter(T=>abil(T)==='light').reduce((t,T)=>t+lightUnits(S,T),0);
+const tameRateHome=S=>homeKinds(S).filter(T=>!isWild(S,T)&&!origAway(S,T)).reduce((t,T)=>t+CFG.tame*tier(T)*(abil(T)==='comfort'?2:1),0);// per minute
+const mile=c=>Math.pow(2,MILE.filter(m=>c>=m).length);
 function fitMult(v,ask){const d=gi(v)-askIdx(ask);return d<0?0:d===0?1:d===1?1.5:2;}
-const fit=(S,sid,aff,ask)=>fitMult(S.spirits[sid].v[aff],ask);
-function tameRate(S,s){return CFG.tame*(1+0.5*Math.max(0,bestBand(s)-1))*(SP[spOf(S,s)].tame||1);}// wildness per minute
-const tameRateHome=S=>atHome(S).filter(s=>s.wild===0&&!isLight(S,s)).reduce((t,s)=>t+tameRate(S,s),0);
-const rentalRate=S=>all(S).filter(s=>s.loc.k==='house').reduce((t,s)=>{const Hs=HOUSES[s.loc.h-1];return t+Hs.rate*fitMult(s.v[Hs.a],Hs.ask);},0);// gold per minute
-const slotPrice=S=>SLOTS[S.slots-2];// undefined when maxed
-const capUp=S=>CAPUP[S.cap]||null;
+const fitOf=(S,T,Hs)=>fitMult(orig(S,T).v[T.aff],Hs.ask);
+const tollPct=S=>0.01*kinds(S).filter(T=>T.post&&abil(T)==='toll').reduce((t,T)=>t+units(S,T)*tier(T),0);
+const sweepPct=(S,h)=>0.03*kinds(S).filter(T=>T.post&&abil(T)==='sweep'&&Math.abs(T.post.h-h)===1).reduce((t,T)=>t+units(S,T)*tier(T),0);
+const steamPct=(S,T)=>abil(T)==='steam'?0.02*units(S,T)*tier(T):0;
+function fedMult(S,T,h){const A=kindAt(S,h-1);if(!A||FEEDS[A.aff]!==T.aff)return 1;const u=units(S,T);if(u<=0)return 1;return 1+0.5*Math.min(1,units(S,A)/u);}
+function quellMult(S,T,h){const A=kindAt(S,h-1),B=kindAt(S,h+1);return (A&&QUELLS[A.aff]===T.aff)||(B&&QUELLS[B.aff]===T.aff)?0.75:1;}
+function breakdown(S,T,h){const Hs=HOUSES[h-1];const u=units(S,T);const parts={u,base:Hs.rate,fit:fitOf(S,T,Hs),fav:T.aff===Hs.a?1.5:1,fed:fedMult(S,T,h),quell:quellMult(S,T,h),mile:mile(T.count),toll:tollPct(S),sweep:sweepPct(S,h),steam:steamPct(S,T)};
+ parts.rate=u<=0||parts.fit===0?0:Hs.rate*u*parts.fit*parts.fav*parts.fed*parts.quell*parts.mile*(1+parts.toll)*(1+parts.sweep)*(1+parts.steam);return parts;}
+const houseRate=(S,T)=>T.post?breakdown(S,T,T.post.h).rate:0;// gold a minute
+const rentalRate=S=>kinds(S).reduce((t,T)=>t+houseRate(S,T),0);
 const nextHouse=S=>HOUSES.find(h=>h.rep>S.rep)||null;
 const roadMult=S=>Math.min(10,1+S.rep/CFG.roadRep);
+const carryUnits=S=>kinds(S).filter(T=>abil(T)==='carry').reduce((t,T)=>t+units(S,T)*tier(T),0);
+const matPrice=(S,aff)=>(S.mats[aff]||0)===0?0:Math.floor(CFG.mat*Math.pow(CFG.matGrow,S.mats[aff]-1));// grandmother's jars had a little of each: the first use of a material is free
+function scrapPrice(S,sp){const P=SP[sp];if(P.t===2&&S.rep<CFG.t2rep)return null;if(S.free[sp])return 0;const base=P.t===2?CFG.scrapT2:P.r==='common'?10:25;return Math.floor(base*Math.pow(CFG.scrapGrow,S.scrap[sp]||0));}
+const foodPrice=T=>CFG.food*Math.ceil(T.count/10);
+function capUp(S){const u=CFG.cap[S.cap];if(!u)return null;return {hours:u[0],price:Math.max(u[2],Math.round(u[1]*rentalRate(S)))};}
+const sellPrice=(S,sp)=>SP[sp].t===2?500:Math.floor(Math.max(10,(scrapPrice(S,sp)||10))/2);
 
 // --- time ---
 function shiftTimes(S,d){S.tick+=d;const B=S.basement;if(B.fuseAt!=null)B.fuseAt+=d;if(B.sitAt!=null)B.sitAt+=d;
- for(const s of all(S)){if(s.loc.at!=null)s.loc.at+=d;if(s.loc.done!=null)s.loc.done+=d;}}
+ for(const s of spirits(S)){if(s.loc.at!=null)s.loc.at+=d;if(s.loc.done!=null)s.loc.done+=d;}for(const T of kinds(S))if(T.post)T.post.at+=d;}
+const wildAtHome=S=>homeKinds(S).filter(T=>isWild(S,T)&&orig(S,T).body).length;
 function syncFuse(S,h){const B=S.basement;const canRun=basementLeft(S)>0&&B.sitAt==null&&wildAtHome(S)<2;
- if(!canRun&&B.fuseAt!=null){B.fuseMs+=h-B.fuseAt;B.fuseAt=null;}
- else if(canRun&&B.fuseAt==null)B.fuseAt=h;}
+ if(!canRun&&B.fuseAt!=null){B.fuseMs+=h-B.fuseAt;B.fuseAt=null;}else if(canRun&&B.fuseAt==null)B.fuseAt=h;}
 const fuseDue=S=>{const B=S.basement;return B.fuseAt==null?null:B.fuseAt+fuseMsFor(S)-B.fuseMs;};
 const sitDue=S=>{const B=S.basement;return B.sitAt==null?null:B.sitAt+sitSec(S)*SEC;};
-function wake(S,t,wild,ev){const B=S.basement;const n=B.next;const spc=B.order[n];B.next++;B.sitAt=null;B.fuseAt=null;B.fuseMs=0;
- const s=newSpirit(S,spc,wild?wildnessFor(n):0,t);
- if(wild){ev.push({t,k:'wild',sid:s.id,from:'basement'});log(S,t,`The ${SP[spc].n.toLowerCase()} woke wild in the dark. ${s.name} needs taming.`);}
- else{ev.push({t,k:'wake',sid:s.id});log(S,t,`${s.name} woke tame: a ${SP[spc].y} (${SP[spc].n.toLowerCase()}), ${SP[spc].a} D.`);}
+function wake(S,t,wild,ev){const B=S.basement;const n=B.next;const sp=B.order[n];const plan=B.plan;B.next++;B.sitAt=null;B.fuseAt=null;B.fuseMs=0;B.plan=null;
+ if(wild){const T=newKind(S,sp,AFF[rint(S,0,4)],wildnessFor(n),t);ev.push({t,k:'wild',tid:T.id,from:'basement'});log(S,t,`The ${SP[sp].n.toLowerCase()} woke wild in the dark. ${T.name} needs taming.`);}
+ else if(plan&&plan.join&&S.kinds[plan.join]&&S.kinds[plan.join].sp===sp){const T=S.kinds[plan.join];T.count++;ev.push({t,k:'join',tid:T.id});log(S,t,`The ${SP[sp].n.toLowerCase()} woke and joined ${T.name}'s kind: ${T.count} now.`);}
+ else{const aff=plan&&plan.found?plan.found.aff:SP[sp].fav;const T=newKind(S,sp,aff,0,t);ev.push({t,k:'wake',tid:T.id});log(S,t,`${T.name} woke tame: a ${SP[sp].y} (${SP[sp].n.toLowerCase()}), ${aff} D. First of her kind.`);}
  if(basementLeft(S)===0){ev.push({t,k:'empty'});log(S,t,"That's all of them. The basement is empty.");}
- syncFuse(S,t);return s;}
-function roadReturn(S,s,ev){const L=s.loc,R=ROADS[L.r],D=DEPTH[L.d],t=L.done;
- S.gold+=L.loot.gold;const c=caps(spOf(S,s));const before=s.v[R.a];s.v[R.a]=Math.min(c[R.a],s.v[R.a]+D.grow);
+ syncFuse(S,t);}
+function roadReturn(S,s,ev){const T=S.kinds[s.tid];const L=s.loc,R=ROADS[L.r],D=DEPTH[L.d],t=L.done;
+ S.gold+=L.loot.gold;const c=caps(T.sp);const before=s.v[R.a];s.v[R.a]=Math.min(c[R.a],s.v[R.a]+D.grow);
  const got=[];if(L.loot.body){newBody(S,L.loot.body);got.push('a '+SP[L.loot.body].n.toLowerCase()+' body');}
- if(L.loot.wild){const w=newSpirit(S,L.loot.wild,D.wildness,t);got.push('a wild '+SP[L.loot.wild].n.toLowerCase()+' ('+w.name+')');ev.push({t,k:'wild',sid:w.id,from:'road'});}
- s.loc={k:'home'};
- let text=`${s.name} is back from ${R.n}: ${L.loot.gold} g${got.length?', '+got.join(', '):''}`;
- if(gi(before)!==gi(s.v[R.a])){ev.push({t,k:'band',sid:s.id,a:R.a});text+=`, ${R.a} ${gradeOf(s.v[R.a])} now`;}
- if(L.loot.breaks){delete S.bodies[s.body];s.body=null;ev.push({t,k:'break',sid:s.id});text+=`. The ${SP[L.loot.sp].n.toLowerCase()} broke; ${s.name} is home unhoused`;}
- text+='.';ev.push({t,k:'return',sid:s.id,gold:L.loot.gold,got,breaks:L.loot.breaks});log(S,t,text);
- S.notices.push({id:uid(S,'n'),k:'return',sid:s.id,text});}
+ if(L.loot.wild){const W=newKind(S,L.loot.wild,AFF[rint(S,0,4)],D.wildness,t);got.push('a wild '+SP[L.loot.wild].n.toLowerCase()+' ('+W.name+')');ev.push({t,k:'wild',tid:W.id,from:'road'});}
+ s.loc={k:'home'};let text=`${s.name} is back from ${R.n}: ${L.loot.gold} g${got.length?', '+got.join(', '):''}`;
+ if(gi(before)!==gi(s.v[R.a])){ev.push({t,k:'band',tid:T.id,a:R.a});text+=`, ${R.a} ${gradeOf(s.v[R.a])} now`;}
+ if(L.loot.breaks){delete S.bodies[s.body];s.body=null;ev.push({t,k:'break',tid:T.id});text+=`. The ${SP[L.loot.sp].n.toLowerCase()} broke; ${s.name} is home unhoused`;}
+ text+='.';ev.push({t,k:'return',tid:T.id,gold:L.loot.gold,got,breaks:L.loot.breaks});log(S,t,text);S.notices.push({id:uid(S,'n'),k:'return',tid:T.id,text});}
 function sweep(S,h,ev){for(;;){let best=null;
-  for(const s of all(S))if(s.loc.k==='road'&&s.loc.done<=h&&(!best||s.loc.done<best.t))best={t:s.loc.done,f:()=>roadReturn(S,s,ev)};
+  for(const s of spirits(S))if(s.loc.k==='road'&&s.loc.done<=h&&(!best||s.loc.done<best.t))best={t:s.loc.done,f:()=>roadReturn(S,s,ev)};
   const sd=sitDue(S);if(sd!=null&&sd<=h&&(!best||sd<best.t))best={t:sd,f:()=>wake(S,sd,false,ev)};
   const fd=fuseDue(S);if(fd!=null&&fd<=h&&(!best||fd<best.t))best={t:fd,f:()=>wake(S,fd,true,ev)};
   if(!best)break;best.f();syncFuse(S,best.t);}
  syncFuse(S,h);}
 function accrue(S,t,ev){// one second of the world
- for(const s of all(S)){if(s.loc.k!=='house')continue;const Hs=HOUSES[s.loc.h-1];const f=fitMult(s.v[Hs.a],Hs.ask);const pay=Hs.rate*f/60;S.gold+=pay;s.loc.sec++;s.loc.earned=(s.loc.earned||0)+pay;
-  if(s.loc.sec%CFG.grow===0){const c=caps(spOf(S,s));const b=s.v[Hs.a];if(b<c[Hs.a]){s.v[Hs.a]=b+1;if(gi(b)!==gi(b+1)){ev.push({t,k:'band',sid:s.id,a:Hs.a});log(S,t,`${s.name} is ${Hs.a} ${gradeOf(b+1)} now.`);}}}
-  if(s.loc.sec%Hs.cyc===0){const r=Hs.crep*(fitMult(s.v[Hs.a],Hs.ask)>=2?2:1);S.rep+=r;s.cycles[Hs.h]=(s.cycles[Hs.h]||0)+1;ev.push({t,k:'cycle',sid:s.id,h:Hs.h,rep:r});}}
+ for(const T of kinds(S)){if(!T.post)continue;const Hs=HOUSES[T.post.h-1];const u=units(S,T);if(u<=0)continue;const bd=breakdown(S,T,T.post.h);if(bd.fit===0)continue;
+  const pay=bd.rate/60;S.gold+=pay;T.post.earned+=pay;T.post.sec++;
+  if(!origAway(S,T)){T.post.g++;if(T.post.g%CFG.grow===0){const o=orig(S,T);const c=caps(T.sp);const b=o.v[T.aff];if(b<c[T.aff]){o.v[T.aff]=b+1;if(gi(b)!==gi(b+1)){ev.push({t,k:'band',tid:T.id,a:T.aff});log(S,t,`${o.name} is ${T.aff} ${gradeOf(b+1)} now; her kind with her.`);}}}}
+  if(T.post.sec%Hs.cyc===0){const r=Hs.crep*(bd.fit>=2?2:1)+(abil(T)==='comfort'?Math.ceil(u/5)*tier(T):0);S.rep+=r;T.cycles[Hs.h]=(T.cycles[Hs.h]||0)+1;ev.push({t,k:'cycle',tid:T.id,h:Hs.h,rep:r});}}
  S.light=Math.min(lightCeiling(S),S.light+lightRate(S)/60);
- const wilds=atHome(S).filter(s=>s.wild>0).sort((a,b)=>a.wild-b.wild||(a.id<b.id?-1:1));// closest to tame first, so one becomes useful as soon as possible
- if(wilds.length){const w=wilds[0];const r=tameRateHome(S)/60;
-  if(r>0){w.wild=Math.max(0,w.wild-r);if(w.wild<1e-9){w.wild=0;S.rep+=2;ev.push({t,k:'tamed',sid:w.id});log(S,t,`${w.name} is tame. +2 rep.`);syncFuse(S,t);}}}}
+ const wilds=homeKinds(S).filter(T=>isWild(S,T)&&orig(S,T).body).map(T=>orig(S,T)).sort((a,b)=>a.wild-b.wild||(a.id<b.id?-1:1));
+ if(wilds.length){const w=wilds[0];const r=tameRateHome(S)/60;if(r>0){w.wild=Math.max(0,w.wild-r);if(w.wild<1e-9){w.wild=0;S.rep+=2;ev.push({t,k:'tamed',tid:w.tid});log(S,t,`${w.name} is tame. +2 rep.`);syncFuse(S,t);}}}}
 function localDay(now){const d=new Date(now);return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');}
-function restock(S,now){const stock=[];
- for(let i=0;i<2;i++){const t2=S.rep>=CFG.t2rep&&i===1;stock.push({kind:'body',sp:pickSp(S,t2?2:1),price:t2?rint(S,800,1600):rint(S,100,200),sold:false});}
- const affs=AFF.slice();for(let i=0;i<3;i++)stock.push({kind:'food',a:affs.splice(rint(S,0,affs.length-1),1)[0],price:CFG.food,sold:false});
- stock.push({kind:'stray',sp:pickSp(S,1),price:CFG.stray+Math.floor(CFG.strayRep*S.rep),sold:false});
- S.market={day:localDay(now),stock};}
+function restock(S,now){const stock=[];const t2=S.rep>=CFG.t2rep&&rand(S)<0.5;stock.push({kind:'body',sp:pickSp(S,t2?2:1),price:t2?rint(S,800,1600):rint(S,30,60),sold:false});
+ const affs=AFF.slice();for(let i=0;i<3;i++)stock.push({kind:'food',a:affs.splice(rint(S,0,affs.length-1),1)[0],sold:false});
+ stock.push({kind:'stray',sp:pickSp(S,1),price:CFG.stray+Math.floor(CFG.strayRep*S.rep),sold:false});S.market={day:localDay(now),stock};}
 function advance(S,now){const ev=[];
  if(now<S.tick){shiftTimes(S,now-S.tick);return ev;}
  S.light=Math.min(S.light,lightCeiling(S));syncFuse(S,S.tick);
  const end=Math.min(now,S.tick+S.cap*H);let t=S.tick;
  while(t+SEC<=end){t+=SEC;sweep(S,t,ev);accrue(S,t,ev);S.tick=t;}
- sweep(S,now,ev);
- if(now>end)S.tick=now;
+ sweep(S,now,ev);if(now>end)S.tick=now;
  S.gold=Math.round(S.gold*1000)/1000;S.light=Math.round(S.light*1000)/1000;
- if(!S.market||S.market.day!==localDay(now))restock(S,now);
- return ev;}
+ if(!S.market||S.market.day!==localDay(now))restock(S,now);return ev;}
 
-// --- actions (return null on success, or a reason string) ---
-function tap(S){if(S.light>=lightCeiling(S))return false;S.light=Math.min(lightCeiling(S),S.light+1);return true;}
-function sit(S,now){const B=S.basement;if(basementLeft(S)===0)return 'The basement is empty';if(B.sitAt!=null)return 'Already sitting';
- const c=sitCost(S);if(S.light<c)return `Need ${c} light (have ${Math.floor(S.light)})`;S.light-=c;B.sitAt=now;B.fuseAt=null;B.fuseMs=0;return null;}
-function canSend(S,sid,dest){const s=S.spirits[sid];if(!s||!s.body)return 'No body';if(s.wild>0)return 'Wild';if(s.loc.k!=='home')return 'Not home';
- if(outCount(S)>=S.slots)return 'Slots full';
- if(dest.h){const Hs=HOUSES[dest.h-1];if(S.rep<Hs.rep)return `Opens at rep ${Hs.rep}`;if(occupant(S,dest.h))return 'Taken';if(fitMult(s.v[Hs.a],Hs.ask)===0)return `Needs ${Hs.a} ${Hs.ask}`;return null;}
- const R=ROADS[dest.r],D=DEPTH[dest.d];if(!R||!D)return 'No such road';const under=askIdx(D.ask)-gi(s.v[R.a]);if(under>1)return 'Far too deep';return null;}
-function roadPreview(S,sid,r,d){const s=S.spirits[sid],R=ROADS[r],D=DEPTH[d];const reason=canSend(S,sid,{r,d});
- return {ok:!reason,reason,breaks:!!s&&gi(s.v[R.a])<askIdx(D.ask),sec:D.sec,gold:Math.floor(D.gold*roadMult(S)),body:D.body,wild:D.wild,grow:D.grow,ask:D.ask};}
-function send(S,now,sid,dest){const why=canSend(S,sid,dest);if(why)return why;const s=S.spirits[sid];
- if(dest.h){s.loc={k:'house',h:dest.h,at:now,sec:0,earned:0};log(S,now,`${s.name} went to ${HOUSES[dest.h-1].n}.`);return null;}
- const R=ROADS[dest.r],D=DEPTH[dest.d];const loot={gold:Math.floor(D.gold*roadMult(S)),body:rand(S)<D.body?pickSp(S,dest.d<2?1:2):null,wild:rand(S)<D.wild?pickSp(S,dest.d<3?1:2):null,breaks:gi(s.v[R.a])<askIdx(D.ask),sp:spOf(S,s)};
- s.loc={k:'road',r:dest.r,d:dest.d,at:now,done:now+D.sec*SEC,loot};log(S,now,`${s.name} set out for ${R.n}, depth ${dest.d+1}.`);return null;}
-function recall(S,now,sid){const s=S.spirits[sid];if(!s||s.loc.k!=='house')return 'Not at a house';log(S,now,`${s.name} came home from ${HOUSES[s.loc.h-1].n}.`);s.loc={k:'home'};return null;}
-function buySlot(S){const p=slotPrice(S);if(p==null)return 'No more slots';if(S.gold<p)return `Need ${p} g`;S.gold-=p;S.slots++;return null;}
-function buyCap(S){const u=capUp(S);if(!u)return 'At the limit';if(S.gold<u[1])return `Need ${u[1]} g`;S.gold-=u[1];S.cap=u[0];return null;}
-function feedGain(s,a){return Math.floor(CFG.foodGain/Math.pow(2,Math.max(0,gi(s.v[a])-2)));}
-function feed(S,sid,a){const s=S.spirits[sid];if(!s||!s.body)return 'No body';if(s.loc.k!=='home')return 'Not home';const c=caps(spOf(S,s));const g=Math.min(feedGain(s,a),c[a]-s.v[a]);if(g<=0)return 'At the cap';s.v[a]+=g;return null;}
-function buyStock(S,now,i,sid){const it=S.market.stock[i];if(!it)return 'Nothing there';if(it.sold)return 'Sold';if(S.gold<it.price)return `Need ${it.price} g`;
- if(it.kind==='body'){newBody(S,it.sp);}
- else if(it.kind==='food'){const why=feed(S,sid,it.a);if(why)return why;}
- else{const s=newSpirit(S,it.sp,0,now);s.v[SP[it.sp].a]=rint(S,10,19);log(S,now,`Bought a stray: ${s.name}, a ${SP[it.sp].y}.`);}
+// --- actions: null on success, else a reason ---
+function tap(S){const c=lightCeiling(S);if(S.light>=c)return false;S.light=Math.min(c,S.light+CFG.tap);return true;}
+function payMat(S,aff){const p=matPrice(S,aff);if(S.gold<p)return `Need ${p} g for ${MATS[aff].n.toLowerCase()}`;S.gold-=p;S.mats[aff]=(S.mats[aff]||0)+1;return null;}
+function sit(S,now,plan){const B=S.basement;if(basementLeft(S)===0)return 'The basement is empty';if(B.sitAt!=null)return 'Already sitting';
+ const c=sitCost(S);if(S.light<c)return `Need ${c} light (have ${Math.floor(S.light)})`;const sp=B.order[B.next];
+ if(plan&&plan.join){const T=S.kinds[plan.join];if(!T)return 'No such kind';if(T.sp!==sp)return 'Not the same shape';}
+ else{const aff=plan&&plan.found?plan.found.aff:SP[sp].fav;if(!AFF.includes(aff))return 'No such material';const why=payMat(S,aff);if(why)return why;plan={found:{aff}};}
+ S.light-=c;B.sitAt=now;B.fuseAt=null;B.fuseMs=0;B.plan=plan;return null;}
+function found(S,now,bid,aff){const b=S.bodies[bid];if(!b||spirits(S).some(s=>s.body===bid))return 'No such body';if(!AFF.includes(aff))return 'No such material';
+ if(S.light<CFG.awaken)return `Need ${CFG.awaken} light`;const why=payMat(S,aff);if(why)return why;S.light-=CFG.awaken;const T=newKind(S,b.sp,aff,0,now,bid);log(S,now,`${T.name} woke at the bench: a ${SP[b.sp].y}, ${aff} D. First of her kind.`);return T.id;}
+function join(S,now,bid,tid){const b=S.bodies[bid],T=S.kinds[tid];if(!b||spirits(S).some(s=>s.body===bid))return 'No such body';if(!T)return 'No such kind';if(T.sp!==b.sp)return 'Not the same shape';if(isWild(S,T))return 'Wild';
+ if(S.light<CFG.awaken)return `Need ${CFG.awaken} light`;S.light-=CFG.awaken;delete S.bodies[bid];T.count++;log(S,now,`One more of ${T.name}'s kind: ${T.count} now.`);return null;}
+function buyScrap(S,sp){const p=scrapPrice(S,sp);if(p==null)return `Not sold until rep ${CFG.t2rep}`;if(S.gold<p)return `Need ${p} g`;S.gold-=p;if(S.free[sp])S.free[sp]=0;else S.scrap[sp]=(S.scrap[sp]||0)+1;newBody(S,sp);return null;}
+function awaken(S,now,tid){const T=S.kinds[tid];if(!T)return 'No such kind';if(isWild(S,T))return 'Wild';const p=scrapPrice(S,T.sp);if(p==null)return `Not sold until rep ${CFG.t2rep}`;
+ if(S.gold<p)return `Need ${p} g`;if(S.light<CFG.awaken)return `Need ${CFG.awaken} light`;S.gold-=p;S.light-=CFG.awaken;if(S.free[T.sp])S.free[T.sp]=0;else S.scrap[T.sp]=(S.scrap[T.sp]||0)+1;T.count++;log(S,now,`One more of ${T.name}'s kind: ${T.count} now.`);return null;}
+function canAssign(S,tid,h){const T=S.kinds[tid],Hs=HOUSES[h-1];if(!T||!Hs)return 'No';if(isWild(S,T))return 'Wild';if(orig(S,T).loc.k==='road')return 'On the road';if(!orig(S,T).body)return 'Unhoused';if(S.rep<Hs.rep)return `Opens at rep ${Hs.rep}`;if(fitOf(S,T,Hs)===0)return `Needs ${T.aff} ${Hs.ask}`;return null;}
+function assign(S,now,tid,h){const why=canAssign(S,tid,h);if(why)return why;const T=S.kinds[tid];if(T.post&&T.post.h===h)return null;const U=kindAt(S,h);const old=T.post?T.post.h:null;
+ T.post={h,at:now,sec:0,g:0,earned:0};
+ if(U){U.post=null;if(old!=null&&!canAssign(S,U.id,old))U.post={h:old,at:now,sec:0,g:0,earned:0};}// the displaced kind takes the vacated house if it fits, else goes home
+ log(S,now,`${T.name}'s kind went to ${HOUSES[h-1].n}${U?'; '+U.name+"'s kind "+(U.post?'moved to '+HOUSES[U.post.h-1].n:'came home'):''}.`);return null;}
+function unassign(S,now,tid){const T=S.kinds[tid];if(!T||!T.post)return 'Not housed';log(S,now,`${T.name}'s kind came home from ${HOUSES[T.post.h-1].n}.`);T.post=null;return null;}
+function merge(S,now,src,dst){const A=S.kinds[src],B=S.kinds[dst];if(!A||!B||A===B)return 'No';if(A.count!==1)return 'Only a lone creature can join';if(isWild(S,A))return 'Wild';if(A.post)return 'Housed';const o=orig(S,A);if(o.loc.k!=='road'&&!o.body)return 'Unhoused';if(o.loc.k==='road')return 'On the road';
+ if(A.sp!==B.sp)return 'Not the same shape';if(A.aff!==B.aff)return 'Different affinity';
+ B.count++;B.roll.push(o.name);delete S.bodies[o.body];delete S.spirits[o.id];delete S.kinds[A.id];log(S,now,`${o.name} joined ${B.name}'s kind: ${B.count} now.`);return null;}
+function feedGain(o,a){return Math.floor(CFG.foodGain/Math.pow(2,Math.max(0,gi(o.v[a])-2)));}
+function feed(S,now,i,tid){const it=S.market.stock[i];const T=S.kinds[tid];if(!it||it.kind!=='food')return 'Nothing there';if(it.sold)return 'Sold';if(!T)return 'No such kind';const o=orig(S,T);if(o.loc.k==='road')return 'On the road';if(!o.body)return 'Unhoused';
+ const p=foodPrice(T);if(S.gold<p)return `Need ${p} g`;const c=caps(T.sp);const g=Math.min(feedGain(o,it.a),c[it.a]-o.v[it.a]);if(g<=0)return 'At the cap';S.gold-=p;o.v[it.a]+=g;it.sold=true;log(S,now,`${o.name} ate: ${it.a} ${o.v[it.a]} (${gradeOf(o.v[it.a])}). Her kind with her.`);return null;}
+function buyStock(S,now,i){const it=S.market.stock[i];if(!it||it.kind==='food')return 'Nothing there';if(it.sold)return 'Sold';if(S.gold<it.price)return `Need ${it.price} g`;
+ if(it.kind==='body')newBody(S,it.sp);else{const T=newKind(S,it.sp,SP[it.sp].fav,0,now);orig(S,T).v[T.aff]=rint(S,10,19);log(S,now,`Bought a stray: ${T.name}, a ${SP[it.sp].y}, ${T.aff} D.`);}
  S.gold-=it.price;it.sold=true;return null;}
-function rehouse(S,sid,bid){const s=S.spirits[sid],b=S.bodies[bid];if(!s||!b)return 'No';if(s.loc.k!=='home')return 'Not home';if(all(S).some(x=>x.body===bid))return 'Body in use';
- const c=caps(b.sp);AFF.forEach(a=>s.v[a]=Math.min(s.v[a],c[a]));s.body=bid;s.yokai=SP[b.sp].y;return null;}
-function sellBody(S,bid){const b=S.bodies[bid];if(!b)return 'No';if(all(S).some(x=>x.body===bid))return 'Body in use';S.gold+=SELL[SP[b.sp].t];delete S.bodies[bid];return null;}
+function roadPreview(S,tid,r,d){const T=S.kinds[tid],R=ROADS[r],D=DEPTH[d];const o=T&&orig(S,T);const c=carryUnits(S);let reason=null;
+ if(!T)reason='No kind';else if(isWild(S,T))reason='Wild';else if(o.loc.k==='road')reason='On the road';else if(!o.body)reason='Unhoused';else if(askIdx(D.ask)-gi(o.v[R.a])>1)reason='Far too deep';
+ return {ok:!reason,reason,breaks:!!o&&gi(o.v[R.a])<askIdx(D.ask),sec:Math.round(D.sec/(1+0.02*c)),gold:Math.floor(D.gold*roadMult(S)*(1+0.03*c)),body:D.body,wild:D.wild,grow:D.grow,ask:D.ask};}
+function send(S,now,tid,r,d){const p=roadPreview(S,tid,r,d);if(!p.ok)return p.reason;const T=S.kinds[tid],o=orig(S,T),D=DEPTH[d];
+ const loot={gold:p.gold,body:rand(S)<D.body?pickSp(S,d<2?1:2):null,wild:rand(S)<D.wild?pickSp(S,d<3?1:2):null,breaks:p.breaks,sp:T.sp};
+ o.loc={k:'road',r,d,at:now,done:now+p.sec*SEC,loot};log(S,now,`${o.name} set out for ${ROADS[r].n}, depth ${d+1}.${T.count>1?' Her kind keeps working.':''}`);return null;}
+function rehouse(S,now,tid,bid){const T=S.kinds[tid],b=S.bodies[bid];if(!T||!b)return 'No';const o=orig(S,T);if(o.body)return 'Already housed';if(spirits(S).some(s=>s.body===bid))return 'Body in use';if(b.sp!==T.sp)return 'Not the same shape';o.body=bid;log(S,now,`${o.name} took the ${SP[b.sp].n.toLowerCase()} on the shelf.`);return null;}
+function borrow(S,now,tid){const T=S.kinds[tid];if(!T)return 'No';const o=orig(S,T);if(o.body)return 'Already housed';if(T.count<2)return 'Nobody to borrow from';T.count--;o.body=newBody(S,T.sp);log(S,now,`${o.name} took a body from her own kind: ${T.count} now.`);return null;}
+function rename(S,tid,name){const T=S.kinds[tid];name=(name||'').trim().slice(0,18);if(!T)return 'No';if(!name)return 'Give it a name';T.name=name;return null;}
+function sellBody(S,bid){const b=S.bodies[bid];if(!b)return 'No';if(spirits(S).some(s=>s.body===bid))return 'Body in use';S.gold+=sellPrice(S,b.sp);delete S.bodies[bid];return null;}
+function buyCap(S){const u=capUp(S);if(!u)return 'At the limit';if(S.gold<u.price)return `Need ${u.price} g`;S.gold-=u.price;S.cap=u.hours;return null;}
 function dismiss(S,id){S.notices=S.notices.filter(n=>n.id!==id);}
-function newGame(seed,now){const S={v:2,savedAt:now,tick:now,rng:seed|0,n:1,gold:0,light:10,rep:0,slots:2,cap:4,
- basement:{order:['candle','kokeshi','ladle'],next:0,fuseAt:now,fuseMs:0,sitAt:null},spirits:{},bodies:{},market:null,log:[],notices:[],seen:{},say:null};
- while(S.basement.order.length<CFG.basement)S.basement.order.push(pickSp(S));
- restock(S,now);log(S,now,'You inherit the shop. Ninety-nine items in the basement.');return S;}
+function newGame(seed,now){const S={v:3,savedAt:now,tick:now,rng:seed|0,n:1,gold:0,light:10,rep:0,cap:4,basement:{order:['candle','kokeshi','ladle'],next:0,fuseAt:now,fuseMs:0,sitAt:null,plan:null},
+ spirits:{},bodies:{},kinds:{},mats:{},scrap:{},free:{candle:1},market:null,log:[],notices:[],seen:{},say:null};
+ while(S.basement.order.length<CFG.basement)S.basement.order.push(pickSp(S));restock(S,now);log(S,now,'You inherit the shop. Ninety-nine items in the basement.');return S;}
 function exportState(S){return JSON.stringify(S);}
-function importState(txt){const o=JSON.parse(txt);if(!o||o.v!==2||!o.basement||!o.spirits)throw new Error('Not a Ninety-Nine save (v2)');return o;}
-if(typeof module!=='undefined')module.exports={SEC,MIN,H,AFF,GR,SP,HOUSES,ROADS,DEPTH,SLOTS,CAPUP,SELL,CFG,gi,gradeOf,bands,caps,fitMult,fit,rand,newGame,advance,tap,sit,sitCost,sitSec,fuseMsFor,wildnessFor,lightCeiling,lightRate,tameRate,tameRateHome,wildAtHome,outCount,atHome,shelf,box,occupant,canSend,roadPreview,send,recall,buySlot,buyCap,buyStock,feed,feedGain,rehouse,sellBody,dismiss,exportState,importState,shiftTimes,spOf,rentalRate,slotPrice,capUp,nextHouse,basementLeft,fuseDue,sitDue,newBody,newSpirit,log,localDay,roadMult};
+function importState(txt){const o=JSON.parse(txt);if(!o||o.v!==3||!o.kinds||!o.spirits)throw new Error('Not a Ninety-Nine save (v3)');return o;}
+if(typeof module!=='undefined')module.exports={SEC,MIN,H,AFF,GR,SP,ABIL,MATS,HOUSES,ROADS,DEPTH,MILE,CFG,FEEDS,QUELLS,gi,gradeOf,bands,caps,fitMult,rand,newGame,advance,tap,sit,found,join,buyScrap,awaken,canAssign,assign,unassign,merge,feed,feedGain,buyStock,roadPreview,send,rehouse,borrow,rename,sellBody,buyCap,dismiss,exportState,importState,shiftTimes,
+ kinds,orig,spirits,isWild,origAway,units,lightUnits,kindAt,homeKinds,shelf,basementLeft,sitCost,sitSec,fuseMsFor,wildnessFor,tier,abil,lightRate,lightCeiling,tameRateHome,mile,fitOf,tollPct,sweepPct,steamPct,fedMult,quellMult,breakdown,houseRate,rentalRate,nextHouse,roadMult,carryUnits,matPrice,scrapPrice,foodPrice,capUp,sellPrice,fuseDue,sitDue,newBody,newKind,log,localDay,wildAtHome};
 </script>
 <script>
-// ===== UI =====
+// ===== UI v3: kinds, families, the street =====
 const $=s=>document.querySelector(s);
 const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const COL={Ember:'var(--ember)',Frost:'var(--frost)',Bloom:'var(--bloom)',Clay:'var(--clay)',Tide:'var(--tide)'};
 const AB={Ember:'Em',Frost:'Fr',Bloom:'Bl',Clay:'Cl',Tide:'Ti'};
+const MATN={Ember:'Wax',Frost:'Ice',Bloom:'Straw',Clay:'Earth',Tide:'Water'};
 const OWNER=Math.random().toString(36).slice(2);
-let S=null;const UI={open:{},road:{},food:{},house:{},modal:null,foreign:false,goldBefore:0,repBefore:0};
+let S=null;const UI={bench:{},sheet:null,assignFor:null,road:{},food:{},modal:null,foreign:false,goldBefore:0,repBefore:0,dbg:false};
 const now=()=>Date.now();
 const dur=ms=>{ms=Math.max(0,ms);const sec=Math.ceil(ms/1000),m=Math.floor(sec/60),h=Math.floor(m/60);if(h>=1)return h+'h '+(m%60)+'m';if(m>=10)return m+' min';if(m>=1)return m+':'+String(sec%60).padStart(2,'0');return sec+' s';};
-const clock=ms=>{ms=Math.max(0,ms);const s=Math.ceil(ms/1000);return Math.floor(s/60)+':'+String(s%60).padStart(2,'0');};
 const ago=t=>{const d=now()-t;return d<60e3?'just now':dur(d)+' ago';};
-const g=x=>Math.floor(x);
-const money=x=>(Math.round(x*10)/10).toString().replace(/\.0$/,'');
+const g=x=>Math.floor(x);const money=x=>(Math.round(x*10)/10).toString().replace(/\.0$/,'');const pct=x=>Math.round(x*100);
+const kindName=T=>T.name+"'s kind";
 
 // --- portraits ---
-function face(cx,cy,w,wild,tame){if(!tame&&!wild)return '';const e=`<circle cx="${cx-w/2}" cy="${cy}" r="1.8" fill="#1c1915"/><circle cx="${cx+w/2}" cy="${cy}" r="1.8" fill="#1c1915"/>`;
+function face(cx,cy,w,wild,live){if(!live&&!wild)return '';const e=`<circle cx="${cx-w/2}" cy="${cy}" r="1.8" fill="#1c1915"/><circle cx="${cx+w/2}" cy="${cy}" r="1.8" fill="#1c1915"/>`;
  const m=wild?`<path d="M${cx-w/2} ${cy+7} l${w/4} -3 l${w/4} 3 l${w/4} -3 l${w/4} 3" fill="none" stroke="#1c1915" stroke-width="1.4"/><path d="M${cx-w/2-4} ${cy-5} l6 2 M${cx+w/2+4} ${cy-5} l-6 2" stroke="#1c1915" stroke-width="1.4"/>`:`<path d="M${cx-w/3} ${cy+6} q${w/3} 4 ${w*2/3} 0" fill="none" stroke="#1c1915" stroke-width="1.4"/>`;return e+m;}
-function portrait(sp,opt={}){const P=SP[sp],a=P.a,col=opt.live?COL[a]:'#8a8177',fill=opt.live?col:'none',fo=opt.live?.18:0,t2=P.t===2,wild=!!opt.wild,live=!!opt.live;const sz=opt.size||56;
+function portrait(sp,opt={}){const P=SP[sp],a=opt.aff||P.fav,col=opt.live?COL[a]:'#8a8177',fill=opt.live?col:'none',fo=opt.live?.18:0,t2=P.t===2,wild=!!opt.wild,live=!!opt.live;const sz=opt.size||56;
  let body='';const st=`stroke="${col}" stroke-width="2" fill="${fill}" fill-opacity="${fo}"`;
  if(P.art==='candle')body=`<rect x="20" y="22" width="16" height="28" rx="2" ${st}/><path d="M28 20 q-6 -8 0 -14 q6 6 0 14z" fill="${live?col:'none'}" stroke="${col}" stroke-width="1.5"/>${t2?`<rect x="14" y="18" width="28" height="4" ${st}/>`:''}${face(28,34,8,wild,live)}`;
  else if(P.art==='chime')body=`<path d="M18 30 q10 -22 20 0 z" ${st}/><rect x="17" y="30" width="22" height="4" ${st}/><line x1="28" y1="34" x2="28" y2="52" stroke="${col}" stroke-width="2"/><rect x="24" y="44" width="8" height="10" ${st}/>${t2?`<path d="M14 32 q14 -28 28 0" fill="none" stroke="${col}" stroke-width="1.5"/>`:''}${face(28,21,7,wild,live)}`;
@@ -281,162 +324,182 @@ function portrait(sp,opt={}){const P=SP[sp],a=P.a,col=opt.live?COL[a]:'#8a8177',
  else if(P.art==='ladle')body=`<path d="M12 30 h24 v6 q0 8 -12 8 q-12 0 -12 -8z" ${st}/><line x1="36" y1="31" x2="50" y2="12" stroke="${col}" stroke-width="3"/>${t2?`<rect x="10" y="26" width="28" height="4" ${st}/>`:''}${face(24,36,8,wild,live)}`;
  else body=`<circle cx="28" cy="18" r="10" ${st}/><rect x="20" y="28" width="16" height="24" rx="4" ${st}/><path d="M18 16 q10 -10 20 0" fill="none" stroke="${col}" stroke-width="2"/>${t2?`<path d="M22 36 h12 M22 42 h12" stroke="${col}" stroke-width="1.5"/>`:''}${face(28,19,7,wild,live)}`;
  return `<svg class="pt${live?' live':''}${wild?' wild':''}" viewBox="0 0 56 56" width="${sz}" height="${sz}" style="--c:${col}" aria-hidden="true">${body}</svg>`;}
+const silhouettes=(sp,n)=>n<=0?'':`<span class="sil">${Array.from({length:Math.min(3,n)},()=>portrait(sp,{size:22})).join('')}${n>3?`<small>+${n-3}</small>`:''}</span>`;
 const hozukiSVG=`<svg viewBox="0 0 56 56" width="64" height="64" class="pt live" style="--c:var(--ember)" aria-hidden="true"><ellipse cx="28" cy="30" rx="17" ry="20" fill="var(--ember)" fill-opacity=".2" stroke="var(--ember)" stroke-width="2"/><path d="M11 24 h34 M11 36 h34" stroke="var(--ember)" stroke-width="1.2"/><rect x="22" y="6" width="12" height="5" fill="var(--ember)"/><rect x="22" y="49" width="12" height="4" fill="var(--ember)"/><circle cx="23" cy="29" r="2" fill="#1c1915"/><circle cx="33" cy="29" r="2" fill="#1c1915"/><path d="M24 36 q4 3 8 0" fill="none" stroke="#1c1915" stroke-width="1.5"/></svg>`;
 
 // --- Hōzuki ---
-// Lines compete: within one check the highest-priority unseen line shows; the rest wait for their next chance (event lines are lost if outranked).
 let CAND=[];function say(key,text,prio=5){if(S.seen[key])return;CAND.push({key,text,prio});}
-function speak(){if(!CAND.length)return;CAND.sort((a,b)=>b.prio-a.prio);const c=CAND[0];CAND=[];if(S.say&&c.prio<S.say.prio&&now()-S.say.at<45e3)return;// a lesser line waits its turn
- S.seen[c.key]=1;S.say={key:c.key,text:c.text,prio:c.prio,at:now()};}
-function sayDefault(){const home=atHome(S),tame=home.filter(s=>s.wild===0),wild=home.filter(s=>s.wild>0);
- if(wild.length&&!tame.some(s=>!isLight(S,s)))return 'Someone has to stay home for that one. Wild ones only settle with company.';
- if(tame.length&&outCount(S)<S.slots)return `${tame[0].name} is waiting, and there's a slot free.`;
+function speak(){if(!CAND.length)return;CAND.sort((a,b)=>b.prio-a.prio);const c=CAND[0];CAND=[];if(S.say&&c.prio<S.say.prio&&now()-S.say.at<45e3)return;S.seen[c.key]=1;S.say={key:c.key,text:c.text,prio:c.prio,at:now()};}
+function sayDefault(){const home=homeKinds(S),wild=home.filter(T=>isWild(S,T)),tame=home.filter(T=>!isWild(S,T));const open=HOUSES.filter(h=>S.rep>=h.rep&&!kindAt(S,h.h));
+ if(wild.length&&tameRateHome(S)===0)return 'Someone has to stay home for that one. Wild ones only settle with company.';
+ if(tame.length&&open.length)return `${tame[0].name} is waiting, and ${open[0].n} is empty.`;
  if(basementLeft(S)>0&&S.basement.sitAt==null&&S.light>=sitCost(S))return "There's light enough. Shall I sit with the next one?";
  if(basementLeft(S)===0)return "Ninety-nine years is a long time to be in the dark. They're all up now.";
  return 'The street is quiet. Good.';}
-function hozukiCheck(ev){const sp=Object.values(S.spirits);CAND=[];
- if(S.basement.sitAt!=null)say('sit',S.basement.next===0?'Five seconds. Tap me while you wait: every tap is light, and the next one costs more.':'Tap me if you like; light is light, and each one costs a little more.');
- if(sp.length&&sp[0].wild===0&&!UI.modal&&S.basement.sitAt==null)say('first',`${sp[0].name}. Ember, grade D: warm, barely. Kōda's oven wants exactly that. Send ${sp[0].name}; she earns by the minute and learns while she works.`,6);
- if(outCount(S)>=S.slots&&atHome(S).length===0&&sp.length>=2)say('full',"Both slots full, nobody home. If the next one wakes before someone sits with it, it wakes wild, and wild ones can't work.",7);
- const waiting=atHome(S).find(s=>s.wild===0);if(waiting&&outCount(S)>=S.slots&&slotPrice(S))say('slots',`${waiting.name} waits. Another slot is ${slotPrice(S)} gold; the street earns that in a few minutes. Go on, I'll keep the lamp.`,6);
+function hozukiCheck(ev){CAND=[];const K=kinds(S);const first=K[0];
+ if(S.basement.next===0&&S.basement.sitAt==null&&!K.length)say('mats','Wax. The others would take, but a candle packed with ice never burns bright. Grandmother\'s jars have a little of each, so the first of anything is free.',5);
+ if(S.basement.sitAt!=null)say('sit',S.basement.next===0?'Five seconds. Tap me while you wait: every tap is light, and the next one costs more.':'Tap me if you like; light is light, and each one costs a little more.',4);
+ if(first&&!isWild(S,first)&&!UI.modal&&S.basement.sitAt==null)say('first',`${first.name}. First of her kind, so her kind is "${first.name}" until you say otherwise. Kōda's oven likes Ember; put her there.`,6);
+ if(K.some(T=>T.post))say('assigned',"See the window light. She earns by the minute, and makes light wherever she stands. Two of her would earn twice.",6);
+ if(S.seen.assigned&&S.light>=CFG.awaken&&!K.some(T=>T.count>1))say('spare',`Grandmother kept a spare candle. Tap Awaken another on ${first?first.name:'her'}: the body, a little light, and her kind grows.`,5);
+ if(K.some(T=>T.count>1))say('two',"Not a new face. One more of her kind, standing behind her. What she learns, they learn. Watch the oven.",6);
+ if(S.basement.next===1&&S.basement.sitAt==null)say('kokeshi',"A kokeshi. Straw, for Bloom: she tames, and Mrs. Tokiwa wants company. Put her upstairs, above the oven.",5);
+ if(K.some(T=>T.post&&fedMult(S,T,T.post.h)>1))say('fed',"There: her straw feeds the flame below, and the oven runs hot. The street's a chain. Mind what stands above what.",7);
+ if(K.some(T=>T.post&&quellMult(S,T,T.post.h)<1))say('quelled',"And that one's quelled: the wrong neighbour above it takes a quarter. Move someone, or pack the next one differently.",6);
  if(S.seen.card)say('return',"They finished cycles while you were gone. That's reputation, and reputation opens doors.",4);
- for(const e of ev){const s=S.spirits[e.sid];
-  if(e.k==='wild')say('wild',`${s.name} woke wild; see it shake. It can't work until someone tame sits with it at home. ${atHome(S).some(x=>x.wild===0&&!isLight(S,x))?'':'Recall one; a kokeshi is quickest.'}`,9);
-  if(e.k==='band')say('band',`${s.name}'s learned something: ${e.a} ${gradeOf(s.v[e.a])} now. Over-qualified earns a tip.`,3);
-  if(e.k==='break')say('break',`${s.name}'s home without a body. Keep the loot; find a new one on the shelf or at the market.`,8);
+ for(const e of ev){const T=S.kinds[e.tid];if(!T)continue;const o=orig(S,T);
+  if(e.k==='wild')say('wild',`${o.name} woke wild; see it shake. It can't work until someone tame sits with it at home. ${tameRateHome(S)>0?'':'Bring one home; a kokeshi is quickest.'}`,9);
+  if(e.k==='band')say('band',`${o.name}'s learned something: ${e.a} ${gradeOf(o.v[e.a])} now, and her kind with her. Over-qualified earns a tip.`,3);
+  if(e.k==='break')say('break',`${o.name}'s home without a body. Her kind keeps the house; a spare body of the shape, or one borrowed from them, puts her back.`,8);
   if(e.k==='empty')say('empty',"That's all of them. Ninety-nine years is a long time to be in the dark.",8);}
- if(S.market.stock.some(x=>x.kind==='stray')&&S.rep>=10)say('stray',"Someone at the market is selling a tame one. Dearer every day you're known.",2);speak();}
+ if(S.rep>=10&&S.market.stock.some(x=>x.kind==='stray'&&!x.sold))say('stray',"Someone at the market is selling a tame one. Dearer every day you're known.",2);speak();}
 
-// --- pieces ---
-function pips(s,sp){const c=caps(sp);return `<div class="pips">${AFF.map(a=>{const v=s.v[a],on=v>0,nat=SP[sp].a===a;return `<span class="pip${on?' on':''}${nat?' nat':''}" style="--c:${COL[a]}" title="${a} ${v} of ${c[a]}">${AB[a]} ${on?gradeOf(v)+v:'–'}</span>`;}).join('')}</div>`;}
-function roleOf(s){if(s.wild>0){const r=tameRateHome(S);const wildest=atHome(S).filter(x=>x.wild>0).sort((a,b)=>a.wild-b.wild||(a.id<b.id?-1:1))[0];
-  return r>0?(wildest===s?`WILD · settling, ${dur(s.wild/r*60e3)}`:'WILD · waiting its turn'):'WILD · nobody home to settle it';}
- if(isLight(S,s))return `Making light · +${bands(s.v.Ember)*SP[spOf(S,s)].light*CFG.light}/min`;const w=atHome(S).find(x=>x.wild>0);return w?`Taming ${w.name}`:'Waiting';}
-function chip(s){const sp=spOf(S,s),open=UI.open[s.id];const wild=s.wild>0;const c=caps(sp);
- const houses=HOUSES.filter(h=>S.rep>=h.rep&&!occupant(S,h.h));
- return `<div class="chip${wild?' wild':''}" id="c-${s.id}"><div class="row sb"><div class="row" style="gap:8px"><div>${portrait(sp,{live:true,wild})}</div><div><b>${esc(s.name)}</b> <span class="muted">${SP[sp].y}</span><div class="muted small">${SP[sp].n}${SP[sp].t===2?' · tier 2':''} · ${wild?'<span class="wildtag">WILD</span> ':''}${esc(roleOf(s))}</div></div></div>
- <button data-act="open" data-id="${s.id}" aria-expanded="${!!open}">${open?'Less':'More'}</button></div>${pips(s,sp)}
- ${open?`<div class="more"><div class="muted small">Caps in this body: ${AFF.map(a=>AB[a]+' '+gradeOf(c[a])).join(' · ')}${AFF.some(a=>s.v[a]>=c[a]&&s.v[a]>0)?` · at the ${SP[sp].n.toLowerCase()}'s limit`:''}</div>
-  ${wild?'':`<div class="row" style="margin-top:6px">${houses.length?houses.map(h=>{const why=canSend(S,s.id,{h:h.h});const f=fitMult(s.v[h.a],h.ask);return `<button class="pri" data-act="send" data-id="${s.id}" data-h="${h.h}" ${why?'disabled title="'+esc(why)+'"':''}>${esc(h.n)} · ${why?esc(why):(f>1?'×'+f+' · ':'')+money(h.rate*f)+' g/min'}</button>`;}).join(''):'<span class="muted">No house open for it yet.</span>'}</div>`}
-  <div class="row" style="margin-top:6px">${S.market.stock.map((it,i)=>it.kind==='food'&&!it.sold?`<button data-act="food" data-i="${i}" data-id="${s.id}" ${s.loc.k!=='home'||S.gold<it.price?'disabled':''}>Feed ${it.a} · ${it.price} g · +${Math.min(feedGain(s,it.a),c[it.a]-s.v[it.a])} → ${gradeOf(Math.min(c[it.a],s.v[it.a]+feedGain(s,it.a)))}${Math.min(c[it.a],s.v[it.a]+feedGain(s,it.a))}</button>`:'').join('')}
-  ${shelf(S).map(b=>`<button data-act="rehouse" data-id="${s.id}" data-b="${b}">Move into the ${SP[S.bodies[b].sp].n.toLowerCase()} · ${AFF.filter(a=>s.v[a]>0).map(a=>AB[a]+' → '+gradeOf(Math.min(caps(S.bodies[b].sp)[a],s.v[a]))).join(' ')}</button>`).join('')}</div></div>`:''}</div>`;}
-function boxChip(s){return `<div class="chip ghost" id="c-${s.id}"><div class="row sb"><div><b>${esc(s.name)}</b> <span class="muted">unhoused · ${esc(s.yokai)}</span>${pips(s,'kokeshi').replace('nat','')}</div></div>
- <div class="row" style="margin-top:6px">${shelf(S).length?shelf(S).map(b=>`<button class="pri" data-act="rehouse" data-id="${s.id}" data-b="${b}">House in the ${SP[S.bodies[b].sp].n.toLowerCase()} · ${AFF.filter(a=>s.v[a]>0).map(a=>AB[a]+' → '+gradeOf(Math.min(caps(S.bodies[b].sp)[a],s.v[a]))).join(' ')||'E'}</button>`).join(''):'<span class="muted">No empty body on the shelf. Roads and the market have them.</span>'}</div></div>`;}
+// --- helpers ---
+function previewAssign(T,h){const saved=T.post;T.post={h,at:0,sec:0,g:0,earned:0};const bd=breakdown(S,T,h);T.post=saved;return bd;}
+function previewAwaken(T){T.count++;const r=houseRate(S,T);T.count--;return r-houseRate(S,T);}
+function abilityLive(T){const u=units(S,T),t=tier(T);switch(abil(T)){case 'light':return `+${2*t*lightUnits(S,T)} light/min now`;case 'toll':return T.post?`every house +${u*t}% now`:'housed: every house +'+(T.count*t)+'%';case 'sweep':return T.post?`neighbours +${3*u*t}% now`:'housed: neighbours +'+(3*T.count*t)+'%';case 'steam':return `this house +${2*u*t}%`;case 'carry':return `roads ÷${(1+0.02*carryUnits(S)).toFixed(2)}, loot +${pct(0.03*carryUnits(S))}% (all Carry)`;case 'comfort':return T.post?`+${Math.ceil(Math.max(1,u)/5)*t} rep a cycle`:`tames ${CFG.tame*2*t} a minute at home`;}}
+function roleOf(T){const o=orig(S,T);if(isWild(S,T)){const r=tameRateHome(S);return r>0?`WILD · settling, ${dur(o.wild/r*60e3)}`:'WILD · nobody home to settle it';}
+ if(!o.body)return 'unhoused';if(o.loc.k==='road')return `on ${ROADS[o.loc.r].n.split(' ')[0]} · back in ${dur(o.loc.done-now())}`;if(abil(T)==='light')return `making light · +${2*tier(T)*lightUnits(S,T)}/min`;if(abil(T)==='comfort')return 'ready to tame';return 'waiting';}
+function pips(T){const o=orig(S,T);const c=caps(T.sp);return `<div class="pips">${AFF.map(a=>{const v=o.v[a],on=v>0,k=T.aff===a;return `<span class="pip${on?' on':''}${k?' nat':''}" style="--c:${COL[a]}" title="${a} ${v} of ${c[a]}">${AB[a]} ${on?gradeOf(v)+v:'–'}</span>`;}).join('')}</div>`;}
+function chipsFor(T,h){const bd=breakdown(S,T,h);const Hs=HOUSES[h-1];const out=[];if(bd.fav>1)out.push(`<span class="bd ok">${Hs.a} ✓</span>`);if(bd.fed>1)out.push(`<span class="bd ok">fed ↑ ×${bd.fed.toFixed(2)}</span>`);if(bd.quell<1)out.push(`<span class="bd bad">quelled ↓ ×0.75</span>`);if(out.length<3&&bd.mile>1)out.push(`<span class="bd">family ×${bd.mile}</span>`);return out.slice(0,3).join('');}
+function relation(above,below){if(!above||!below)return {k:'none'};if(FEEDS[above.aff]===below.aff)return {k:'feeds'};if(QUELLS[above.aff]===below.aff)return {k:'quells',who:'below'};if(QUELLS[below.aff]===above.aff)return {k:'quells',who:'above'};return {k:'none'};}
 
-function mast(){const t=now();const frac=Math.min(1,Math.max(0,(t-S.tick)/MIN));const gold=g(S.gold+rentalRate(S)*frac);const nh=nextHouse(S);const sp=slotPrice(S);
- return `<header class="mast"><div class="row sb" style="align-items:flex-end"><h1>Ninety-Nine</h1><span class="sub">tsukumogami for hire</span></div>
- <div class="strip"><span>Gold <b>${gold}</b>${rentalRate(S)?`<small> +${money(rentalRate(S))}/min</small>`:''}</span>
- <button class="lantern" data-act="tap" aria-label="Tap the lantern for light">☼ Light <b>${g(S.light)}</b>/${lightCeiling(S)}<small> +${lightRate(S)}/min</small></button>
- <span>Rep <b>${S.rep}</b>${nh?`<small> · ${esc(nh.n.split(',')[0])} at ${nh.rep}</small>`:''}</span>
- <span>Out <b>${outCount(S)}</b>/${S.slots} ${sp?`<button data-act="slot" ${S.gold<sp?'disabled':''}>+1 · ${sp} g</button>`:''}</span>
- <span>Basement <b>${basementLeft(S)}</b></span></div></header>`;}
-
-function shop(){const B=S.basement,t=now();const left=basementLeft(S);const nextSp=left?SP[B.order[B.next]]:null;const sd=sitDue(S),fd=fuseDue(S);const cost=sitCost(S);
- const fuseText=B.sitAt!=null?`sitting… ${clock(sd-t)}`:fd!=null?`wakes wild in ${dur(fd-t)}`:wildAtHome(S)>=2?'waiting: two wild ones at home already':'';
- const basement=left?`<div class="box dbl"><div class="kick">The basement · next up</div><div class="row sb"><div class="row" style="gap:8px">${portrait(B.order[B.next],{})}<div><div class="hl">${nextSp.n}</div><div class="muted small">${nextSp.r}${nextSp.t===2?' · tier 2':''} · ${nextSp.a} · ${esc(fuseText)}</div></div></div>
-  ${B.sitAt!=null?`<div class="bar"><i style="width:${Math.min(100,100-(sd-t)/(sitSec(S)*SEC)*100)}%"></i></div>`:`<button class="pri big" data-act="sit" ${S.light<cost?'disabled':''}>Sit with it · ${cost} light · ${dur(sitSec(S)*SEC)}</button>`}</div>
-  ${S.light<cost&&B.sitAt==null?`<div class="muted small">Need ${cost} light, have ${g(S.light)}. Light fills ${lightRate(S)} a minute; tapping the lantern adds one.</div>`:''}</div>
-  <div class="row sb small muted" style="margin-top:6px"><span>Away from the shop, the street pays for ${S.cap} h.</span>${capUp(S)?`<button data-act="cap" ${S.gold<capUp(S)[1]?'disabled':''}>Pay ${capUp(S)[0]} h · ${capUp(S)[1]} g</button>`:''}</div>`:`<div class="box"><div class="kick">The basement</div><div class="hl">Empty.</div><div class="muted small">Ninety-nine, all up. Roads and the market keep the shop supplied.</div></div>`;
- const home=atHome(S);const bx=box(S);
- return `<section><div class="box hoz"><div class="row" style="gap:10px;align-items:flex-start">${hozukiSVG}<div><div class="kick">Hōzuki, the shop lantern</div><p>${esc(S.say?S.say.text:sayDefault())}</p>${S.say&&S.say.key!=='open'?`<div class="muted small">${esc(sayDefault())}</div>`:''}</div></div></div>
- ${basement}
- <div class="kick" style="margin-top:12px">At home · ${home.length}</div>${home.length?`<div class="chips">${home.sort((a,b)=>(b.wild>0)-(a.wild>0)).map(chip).join('')}</div>`:'<div class="muted">Nobody home.</div>'}
- ${bx.length?`<div class="kick" style="margin-top:12px">The box · unhoused spirits · ${bx.length}</div><div class="chips">${bx.map(boxChip).join('')}</div>`:''}
- ${shelf(S).length?`<div class="kick" style="margin-top:12px">The shelf · empty bodies</div><div class="row">${shelf(S).map(b=>`<span class="chip tiny">${portrait(S.bodies[b].sp,{size:36})}<span>${SP[S.bodies[b].sp].n}${SP[S.bodies[b].sp].t===2?' · tier 2':''}</span><button data-act="sell" data-b="${b}">Sell · ${SELL[SP[S.bodies[b].sp].t]} g</button></span>`).join('')}</div>`:''}</section>`;}
-
-function house(h){const occ=occupant(S,h.h);const t=now();
- if(occ){const f=fitMult(occ.v[h.a],h.ask);const sp=spOf(S,occ);const cyc=h.cyc-(occ.loc.sec%h.cyc);
-  return `<div class="box house lit" style="--c:${COL[h.a]}"><div class="kick">${esc(h.n)} · ${h.a} ${h.ask}</div><div class="row sb"><div class="row" style="gap:8px">${portrait(sp,{live:true})}<div><b>${esc(occ.name)}</b> <span class="muted small">${h.a} ${gradeOf(occ.v[h.a])}${f>1?' · ×'+f+(f===1.5?' a tip':''):''}</span><div class="small">earning ${money(h.rate*f)} g/min · ${g(occ.loc.earned||0)} g so far · +${h.crep*(f>=2?2:1)} rep in ${dur(cyc*SEC)}</div><div class="bar thin"><i style="width:${100-cyc/h.cyc*100}%;background:var(--c)"></i></div></div></div><button data-act="recall" data-id="${occ.id}">Recall</button></div></div>`;}
- const el=atHome(S).filter(s=>s.wild===0&&!canSend(S,s.id,{h:h.h}));const why=outCount(S)>=S.slots?'Slots full':atHome(S).some(s=>s.wild===0)?`Nobody home with ${h.a} ${h.ask}`:'Nobody home';
- return `<div class="box house"><div class="kick">${esc(h.n)} · tier ${h.tier}</div><div class="hl">${esc(h.p)}</div><div class="row sb"><span class="bd aff" style="border-left-color:${COL[h.a]}">${h.a} ${h.ask}</span><span class="price">${money(h.rate)}<small> g/min</small></span></div>
- <div class="row" style="margin-top:6px">${el.length?el.map(s=>{const f=fitMult(s.v[h.a],h.ask);return `<button class="pri" data-act="send" data-id="${s.id}" data-h="${h.h}">Send ${esc(s.name)} · ${f>1?'×'+f+(f===1.5?' a tip':'')+' · ':'Fits · '}${money(h.rate*f)} g/min</button>`;}).join(''):`<span class="muted">${why}</span>`}</div></div>`;}
-function street(){const open=HOUSES.filter(h=>S.rep>=h.rep),locked=HOUSES.filter(h=>S.rep<h.rep);
- return `<section><h2 class="sec">The street</h2><div class="muted small" style="margin-bottom:8px">Rentals pay every second and renew until recalled; each finished cycle is reputation. A tenant learns the house's affinity, +1 an hour, up to what its body allows.</div>
- ${open.map(house).join('')}${locked.length?`<div class="box ghost"><span class="muted">${locked.length} more house${locked.length>1?'s':''} · next: ${esc(locked[0].n)} at rep ${locked[0].rep}</span></div>`:''}</section>`;}
-
-function road(r){const R=ROADS[r];const st=UI.road[r]||(UI.road[r]={d:0,sid:''});const t=now();const out=all(S).filter(s=>s.loc.k==='road'&&s.loc.r===r);
- const el=atHome(S).filter(s=>s.wild===0);const chosen=S.spirits[st.sid]&&el.includes(S.spirits[st.sid])?S.spirits[st.sid]:el[0];if(chosen)st.sid=chosen.id;
- const rows=DEPTH.map((D,i)=>{const p=chosen?roadPreview(S,chosen.id,r,i):null;const mult=roadMult(S);return `<button class="depth${st.d===i?' on':''}${p&&!p.ok?' off':''}" data-act="depth" data-r="${r}" data-d="${i}" ${el.length?'':'disabled'}>D${i+1} · ${dur(D.sec*SEC)} · ask ${D.ask} · ${Math.floor(D.gold*mult)} g · body ${D.body*100}% · wild ${D.wild*100}% · +${D.grow} ${R.a}</button>`;}).join('');
+// --- sections ---
+function mast(){const t=now();const frac=Math.min(1,Math.max(0,(t-S.tick)/SEC));const rate=rentalRate(S);const gold=g(S.gold+rate/60*frac);const nh=nextHouse(S);
+ return `<header class="mast"><div class="row sb" style="align-items:flex-end"><h1>Ninety-Nine</h1><span class="rate"><b>${money(rate)}</b> g/min</span></div>
+ <div class="strip"><span>Gold <b>${gold}</b></span><button class="lantern" data-act="tap" aria-label="Tap the lantern for light">☼ Light <b>${g(S.light)}</b>/${lightCeiling(S)}<small> +${lightRate(S)}/min</small></button>
+ <span>Rep <b>${S.rep}</b>${nh?`<small> · ${esc(nh.n.split(',')[0])} at ${nh.rep}</small>`:''}</span><span>Basement <b>${basementLeft(S)}</b></span></div></header>`;}
+function hozuki(){return `<div class="box hoz"><div class="row" style="gap:10px;align-items:flex-start">${hozukiSVG}<div><div class="kick">Hōzuki, the shop lantern</div><p>${esc(S.say?S.say.text:sayDefault())}</p>${S.say?`<div class="muted small">${esc(sayDefault())}</div>`:''}</div></div></div>`;}
+function bench(){const B=S.basement,t=now();const left=basementLeft(S);let html='';
+ if(left){const sp=B.order[B.next],P=SP[sp];const sd=sitDue(S),fd=fuseDue(S);const cost=sitCost(S);const joinable=kinds(S).filter(T=>T.sp===sp&&!isWild(S,T));
+  const bs=UI.bench;if(bs.sp!==sp){bs.sp=sp;bs.mode='found';bs.aff=P.fav;bs.join=null;}
+  const fuseText=B.sitAt!=null?`sitting… ${dur(sd-t)}`:fd!=null?`wakes wild in ${dur(fd-t)}`:wildAtHome(S)>=2?'waiting: two wild ones at home already':'';
+  const plan=B.sitAt!=null?(B.plan&&B.plan.join&&S.kinds[B.plan.join]?`→ joins ${kindName(S.kinds[B.plan.join])}`:`→ a new kind, ${B.plan&&B.plan.found?B.plan.found.aff:P.fav}`):'';
+  html+=`<div class="box dbl"><div class="kick">The bench · next from the basement</div><div class="row sb"><div class="row" style="gap:8px">${portrait(sp,{aff:bs.mode==='found'?bs.aff:(bs.join&&S.kinds[bs.join]?S.kinds[bs.join].aff:P.fav)})}<div><div class="hl">${P.n}</div><div class="muted small">${P.r}${P.t===2?' · tier 2':''} · ${ABIL[P.ab].n}: ${ABIL[P.ab].text} · ${esc(fuseText)} ${esc(plan)}</div></div></div></div>
+  ${B.sitAt!=null?`<div class="bar" style="margin-top:6px"><i style="width:${Math.min(100,100-(sd-t)/(sitSec(S)*SEC)*100)}%"></i></div>`:`
+  <div class="kick" style="margin-top:8px">Pack it</div><div class="row">${AFF.map(a=>{const p=matPrice(S,a);const fav=a===P.fav;const on=bs.mode==='found'&&bs.aff===a;return `<button class="mat${on?' on':''}${fav?'':' dim'}" data-act="bmat" data-a="${a}" style="--c:${COL[a]}">${MATN[a]} · ${a} · ${p===0?'free':p+' g'} · caps ${gradeOf(caps(sp)[a])}</button>`;}).join('')}
+  ${joinable.map(T=>`<button class="mat${bs.mode==='join'&&bs.join===T.id?' on':''}" data-act="bjoin" data-id="${T.id}">Join ${esc(kindName(T))} · ×${T.count+1}</button>`).join('')}</div>
+  <div class="row sb" style="margin-top:8px"><button class="pri big" data-act="sit" ${S.light<cost||(bs.mode==='found'&&S.gold<matPrice(S,bs.aff))?'disabled':''}>Sit with it · ${cost} light${bs.mode==='found'&&matPrice(S,bs.aff)?' · '+matPrice(S,bs.aff)+' g':''} · ${dur(sitSec(S)*SEC)}</button>${S.light<cost?`<span class="muted small">need ${cost} light, have ${g(S.light)}</span>`:''}</div>`}</div>`;}
+ else html+=`<div class="box"><div class="kick">The basement</div><div class="hl">Empty.</div><div class="muted small">Ninety-nine, all up. The scrapyard and the roads keep the shop supplied.</div></div>`;
+ const sh=shelf(S);if(sh.length)html+=`<div class="kick" style="margin-top:10px">The shelf · empty bodies</div>${sh.map(b=>{const sp=S.bodies[b].sp,P=SP[sp];const joinable=kinds(S).filter(T=>T.sp===sp&&!isWild(S,T));const sel=UI.food['b'+b]||P.fav;
+  return `<div class="box"><div class="row sb"><span class="row" style="gap:6px">${portrait(sp,{size:36})}<b>${P.n}</b>${P.t===2?' · tier 2':''}</span><button data-act="sell" data-b="${b}">Sell · ${sellPrice(S,sp)} g</button></div>
+  <div class="row" style="margin-top:6px"><select data-f="bodymat" data-b="${b}">${AFF.map(a=>`<option value="${a}" ${a===sel?'selected':''}>${MATN[a]} · ${a} · ${matPrice(S,a)} g · caps ${gradeOf(caps(sp)[a])}</option>`).join('')}</select><button class="pri" data-act="found" data-b="${b}" data-a="${sel}" ${S.light<CFG.awaken||S.gold<matPrice(S,sel)?'disabled':''}>Found a kind · 10 light</button>
+  ${joinable.map(T=>`<button data-act="join" data-b="${b}" data-id="${T.id}" ${S.light<CFG.awaken?'disabled':''}>Join ${esc(kindName(T))} · 10 light</button>`).join('')}</div></div>`;}).join('')}`;
+ return `<section>${html}</section>`;}
+function strip(){const home=homeKinds(S);return `<section><div class="kick">At home · ${home.length} kind${home.length===1?'':'s'}</div>${home.length?`<div class="minis">${home.sort((a,b)=>(isWild(S,b)?1:0)-(isWild(S,a)?1:0)).map(T=>{const o=orig(S,T);return `<button class="mini${isWild(S,T)?' wild':''}" data-act="sheet" data-id="${T.id}">${portrait(T.sp,{aff:T.aff,live:!!o.body,wild:isWild(S,T),size:40})}<span><b>${esc(o.name)}</b>${T.count>1?` ×${T.count}`:''}<br><small>${esc(roleOf(T))}</small></span></button>`;}).join('')}</div>`:'<div class="muted small">Nobody home. The houses have them all.</div>'}</section>`;}
+function houseCard(h){const Hs=HOUSES[h-1];const T=kindAt(S,h);
+ if(!T){const cands=homeKinds(S).filter(K=>!canAssign(S,K.id,h));return `<div class="box house empty"><div class="kick">${esc(Hs.n)} · wants ${Hs.a} · asks ${Hs.ask}</div><div class="row sb"><span class="hl" style="font-size:15px">${esc(Hs.p)}</span><span class="price">${money(Hs.rate)}<small> g/min each</small></span></div>
+  <div class="row" style="margin-top:6px">${cands.length?cands.map(K=>{const bd=previewAssign(K,h);const rel=[];if(bd.fed>1)rel.push('fed ↑');if(bd.quell<1)rel.push('quelled ↓');if(bd.fav>1)rel.push(Hs.a+' ✓');return `<button class="pri" data-act="assign" data-id="${K.id}" data-h="${h}">${esc(orig(S,K).name)}${K.count>1?' ×'+K.count:''} → ${money(bd.rate)} g/min${rel.length?' · '+rel.join(' '):''}</button>`;}).join(''):`<span class="muted small">${homeKinds(S).length?'Nobody home fits: needs grade '+Hs.ask:'Nobody home to send'}</span>`}</div></div>`;}
+ const o=orig(S,T);const bd=breakdown(S,T,h);const cyc=Hs.cyc-(T.post.sec%Hs.cyc);const away=origAway(S,T);
+ return `<button class="box house lit${away?' dim':''}" style="--c:${COL[T.aff]}" data-act="sheet" data-id="${T.id}"><div class="kick">${esc(Hs.n)} · wants ${Hs.a}</div><div class="row sb"><span class="row" style="gap:8px">${away?`<span class="frame">${portrait(T.sp,{aff:T.aff,size:48})}</span>`:portrait(T.sp,{aff:T.aff,live:true,size:48})}${silhouettes(T.sp,T.count-1)}<span><b>${esc(o.name)}</b>${T.count>1?` <span class="muted">×${T.count}</span>`:''}<br><small class="muted">${esc(SP[T.sp].y)} · ${T.aff} ${gradeOf(o.v[T.aff])}${away?' · '+esc(roleOf(T)):''}</small></span></span><span class="rate">${money(bd.rate)}<small> g/min</small></span></div>
+ <div class="row sb" style="margin-top:4px"><span class="badges">${chipsFor(T,h)}</span><small class="muted">+${Hs.crep*(bd.fit>=2?2:1)+(abil(T)==='comfort'?Math.ceil(Math.max(1,bd.u)/5)*tier(T):0)} rep in ${dur(cyc*SEC)}</small></div><div class="bar thin"><i style="width:${100-cyc/Hs.cyc*100}%;background:var(--c)"></i></div></button>`;}
+function street(){const open=HOUSES.filter(h=>S.rep>=h.rep),locked=HOUSES.filter(h=>S.rep<h.rep);let html='';
+ open.forEach((Hs,i)=>{if(i>0){const rel=relation(kindAt(S,open[i-1].h),kindAt(S,Hs.h));html+=`<div class="rail ${rel.k}">${rel.k==='feeds'?'<span>▼ feeds</span>':rel.k==='quells'?`<span>⊘ quells ${rel.who==='below'?'↓':'↑'}</span>`:'<span>·</span>'}</div>`;}html+=houseCard(Hs.h);});
+ if(locked.length)html+=`<div class="box ghost"><span class="muted">${locked.length} more house${locked.length>1?'s':''} · next: ${esc(locked[0].n)} at rep ${locked[0].rep}</span></div>`;
+ return `<section id="street"><h2 class="sec">The street</h2><div class="muted small" style="margin-bottom:8px">A house pays per working member, more for a better grade and for the affinity it likes. The kind above feeds or quells the one below: Bloom → Ember → Clay → Frost → Tide → Bloom.</div>${html}</section>`;}
+function road(r){const R=ROADS[r];const st=UI.road[r]||(UI.road[r]={d:0,tid:''});const t=now();const el=kinds(S).filter(T=>!isWild(S,T)&&orig(S,T).body&&orig(S,T).loc.k!=='road');const chosen=S.kinds[st.tid]&&el.includes(S.kinds[st.tid])?S.kinds[st.tid]:el[0];if(chosen)st.tid=chosen.id;
+ const out=spirits(S).filter(s=>s.loc.k==='road'&&s.loc.r===r);const c=carryUnits(S);
+ const rows=DEPTH.map((D,i)=>{const p=chosen?roadPreview(S,chosen.id,r,i):null;return `<button class="depth${st.d===i?' on':''}${p&&!p.ok?' off':''}" data-act="depth" data-r="${r}" data-d="${i}" ${el.length?'':'disabled'}>D${i+1} · ${dur(Math.round(D.sec/(1+0.02*c))*SEC)} · ask ${D.ask} · ${Math.floor(D.gold*roadMult(S)*(1+0.03*c))} g · body ${D.body*100}% · wild ${D.wild*100}% · +${D.grow} ${R.a}</button>`;}).join('');
  const p=chosen?roadPreview(S,chosen.id,r,st.d):null;
- return `<div class="box"><div class="kick">${esc(R.n)} · ${R.a}</div><div class="depths">${rows}</div>
- ${out.map(s=>`<div class="small">${esc(s.name)} is out · back in ${dur(s.loc.done-t)}${s.loc.loot.breaks?' · the body will break':''}</div>`).join('')}
- <div class="row" style="margin-top:6px">${el.length?`<select data-f="roadsid" data-r="${r}">${el.map(s=>`<option value="${s.id}" ${s===chosen?'selected':''}>${esc(s.name)} · ${R.a} ${gradeOf(s.v[R.a])}${s.v[R.a]?s.v[R.a]:''}</option>`).join('')}</select>
-  <button class="${p&&p.breaks?'red':'pri'}" data-act="road" data-r="${r}" data-id="${chosen.id}" ${p&&!p.ok?'disabled':''}>${p&&!p.ok?esc(p.reason):p.breaks?'Send anyway':'Send'}</button>`:'<span class="muted">Nobody home to send.</span>'}</div>
- ${p&&p.ok&&p.breaks?`<div class="warn">Too deep for a ${gradeOf(chosen.v[R.a])}. The ${SP[spOf(S,chosen)].n.toLowerCase()} will break; ${esc(chosen.name)} comes home unhoused and you keep the loot.</div>`:''}</div>`;}
-function roads(){return `<section><h2 class="sec">The roads</h2><div class="muted small" style="margin-bottom:8px">Pick a depth, send, wait. Deeper pays more and brings back bodies and wild ones; one grade under the ask breaks the body.</div>${Object.keys(ROADS).map(road).join('')}</section>`;}
-
-function market(){const st=S.market.stock;const home=atHome(S).filter(s=>s.loc.k==='home');
- return `<section><h2 class="sec">The market</h2><div class="muted small" style="margin-bottom:8px">New stock at midnight.${S.rep<200?' Tier-2 bodies appear at rep 200.':''}</div><div class="box">${st.map((it,i)=>{
-  if(it.kind==='body')return `<div class="row sb line">${portrait(it.sp,{size:36})}<span><b>${SP[it.sp].n}</b> body${SP[it.sp].t===2?' · tier 2':''} <span class="muted small">caps ${AFF.map(a=>AB[a]+' '+gradeOf(caps(it.sp)[a])).join(' ')}</span></span>${it.sold?'<span class="muted">sold</span>':`<button data-act="buy" data-i="${i}" ${S.gold<it.price?'disabled':''}>${it.price} g</button>`}</div>`;
-  if(it.kind==='stray')return `<div class="row sb line">${portrait(it.sp,{live:true,size:36})}<span><b>A stray ${SP[it.sp].n.toLowerCase()}</b> <span class="muted small">tame, ${SP[it.sp].a} D, comes with its body</span></span>${it.sold?'<span class="muted">sold</span>':`<button class="pri" data-act="buy" data-i="${i}" ${S.gold<it.price?'disabled':''}>${it.price} g</button>`}</div>`;
-  const sel=UI.food[i]&&home.find(s=>s.id===UI.food[i])?UI.food[i]:(home[0]&&home[0].id);const s=S.spirits[sel];
-  return `<div class="row sb line"><span><b>Food · ${it.a}</b> <span class="muted small">+6 ${it.a}, less above C</span></span>${it.sold?'<span class="muted">sold</span>':home.length?`<span class="row"><select data-f="food" data-i="${i}">${home.map(x=>`<option value="${x.id}" ${x.id===sel?'selected':''}>${esc(x.name)} · ${AB[it.a]} ${gradeOf(x.v[it.a])}${x.v[it.a]}</option>`).join('')}</select><button data-act="food" data-i="${i}" data-id="${sel}" ${S.gold<it.price?'disabled':''}>${it.price} g → ${gradeOf(Math.min(caps(spOf(S,s))[it.a],s.v[it.a]+feedGain(s,it.a)))}</button></span>`:'<span class="muted">nobody home to feed</span>'}</div>`;}).join('')}</div></section>`;}
-
+ return `<div class="box"><div class="kick">${esc(R.n)} · ${R.a}</div><div class="depths">${rows}</div>${out.map(s=>`<div class="small">${esc(s.name)} is out · back in ${dur(s.loc.done-t)}${s.loc.loot.breaks?' · the body will break':''}</div>`).join('')}
+ <div class="row" style="margin-top:6px">${el.length?`<select data-f="roadtid" data-r="${r}">${el.map(T=>`<option value="${T.id}" ${T===chosen?'selected':''}>${esc(orig(S,T).name)} · ${R.a} ${gradeOf(orig(S,T).v[R.a])}${orig(S,T).v[R.a]||''}${T.count>1?' · family keeps working':''}</option>`).join('')}</select><button class="${p&&p.breaks?'red':'pri'}" data-act="road" data-r="${r}" data-id="${chosen.id}" ${p&&!p.ok?'disabled':''}>${p&&!p.ok?esc(p.reason):p.breaks?'Send anyway':'Send'}</button>`:'<span class="muted">Nobody to send.</span>'}</div>
+ ${p&&p.ok&&p.breaks?`<div class="warn">Too deep for a ${gradeOf(orig(S,chosen).v[R.a])}. The ${SP[chosen.sp].n.toLowerCase()} will break; ${esc(orig(S,chosen).name)} comes home unhoused and you keep the loot.</div>`:''}</div>`;}
+function roads(){return `<section><h2 class="sec">The roads</h2><div class="muted small" style="margin-bottom:8px">Originals only; the family keeps the house. Deeper pays more and brings bodies and wild ones home; one grade under the ask breaks the body.</div>${Object.keys(ROADS).map(road).join('')}</section>`;}
+function market(){const st=S.market.stock;const feedable=kinds(S).filter(T=>!isWild(S,T)&&orig(S,T).body&&orig(S,T).loc.k!=='road');const cu=capUp(S);
+ const scrap=Object.keys(SP).filter(sp=>SP[sp].t===1||S.rep>=CFG.t2rep).map(sp=>{const p=scrapPrice(S,sp);return `<div class="row sb line">${portrait(sp,{size:30})}<span><b>${SP[sp].n}</b> body <span class="muted small">${ABIL[SP[sp].ab].n} · likes ${SP[sp].fav}</span></span><button data-act="scrap" data-sp="${sp}" ${p==null||S.gold<p?'disabled':''}>${p==null?'rep '+CFG.t2rep:p===0?'free':p+' g'}</button></div>`;}).join('');
+ return `<section><h2 class="sec">The market</h2><div class="box"><div class="kick">Today · new stock at midnight</div>${st.map((it,i)=>{
+  if(it.kind==='body')return `<div class="row sb line">${portrait(it.sp,{size:36})}<span><b>${SP[it.sp].n}</b> body${SP[it.sp].t===2?' · tier 2':''}</span>${it.sold?'<span class="muted">sold</span>':`<button data-act="buy" data-i="${i}" ${S.gold<it.price?'disabled':''}>${it.price} g</button>`}</div>`;
+  if(it.kind==='stray')return `<div class="row sb line">${portrait(it.sp,{aff:SP[it.sp].fav,live:true,size:36})}<span><b>A stray ${SP[it.sp].n.toLowerCase()}</b> <span class="muted small">tame, ${SP[it.sp].fav} D, first of a kind</span></span>${it.sold?'<span class="muted">sold</span>':`<button class="pri" data-act="buy" data-i="${i}" ${S.gold<it.price?'disabled':''}>${it.price} g</button>`}</div>`;
+  const sel=UI.food[i]&&feedable.find(T=>T.id===UI.food[i])?UI.food[i]:(feedable[0]&&feedable[0].id);const T=S.kinds[sel];
+  return `<div class="row sb line"><span><b>Food · ${it.a}</b> <span class="muted small">+6 ${it.a} to an original; her kind follows</span></span>${it.sold?'<span class="muted">sold</span>':T?`<span class="row"><select data-f="food" data-i="${i}">${feedable.map(K=>`<option value="${K.id}" ${K.id===sel?'selected':''}>${esc(orig(S,K).name)}${K.count>1?' ×'+K.count:''} · ${AB[it.a]} ${gradeOf(orig(S,K).v[it.a])}${orig(S,K).v[it.a]||''}</option>`).join('')}</select><button data-act="feed" data-i="${i}" data-id="${sel}" ${S.gold<foodPrice(T)?'disabled':''}>${foodPrice(T)} g → ${gradeOf(Math.min(caps(T.sp)[it.a],orig(S,T).v[it.a]+feedGain(orig(S,T),it.a)))}</button></span>`:'<span class="muted">nobody to feed</span>'}</div>`;}).join('')}
+  <div class="row sb line"><span><b>Away from the shop</b> <span class="muted small">the street pays for ${S.cap} h</span></span>${cu?`<button data-act="cap" ${S.gold<cu.price?'disabled':''}>${cu.hours} h · ${cu.price} g</button>`:'<span class="muted">at the limit</span>'}</div></div>
+ <div class="box" style="margin-top:8px"><div class="kick">The scrapyard · old bodies, dearer as you clear them</div>${scrap}${S.rep<CFG.t2rep?`<div class="muted small">Tier-2 shapes at rep ${CFG.t2rep}.</div>`:''}</div></section>`;}
 function ledger(){return `<section><h2 class="sec">Ledger</h2><div class="box"><div class="log">${S.log.slice(0,40).map(l=>`<div><span class="muted small">${ago(l.t)}</span> ${esc(l.text)}</div>`).join('')}</div></div>
  <details class="box" style="margin-top:8px" ${UI.dbg?'open':''} data-dbg><summary class="kick">Save, debug</summary><div class="row" style="margin:8px 0"><button data-act="export">Copy save</button><button data-act="import">Load save</button><button class="red" data-act="new">New game</button><button data-act="skip" data-s="60">Debug: skip 1 min</button><button data-act="skip" data-s="600">Skip 10 min</button><button data-act="skip" data-s="3600">Skip 1 h</button><button data-act="skip" data-s="28800">Skip 8 h</button></div><textarea id="pk" rows="3" placeholder="paste a save here, then Load"></textarea></details></section>`;}
-
-function bar(){const items=[];const t=now();
- for(const n of S.notices)items.push(`<button data-act="dismiss" data-id="${n.id}" data-go="c-${n.sid}">${esc(n.text.split(':')[0])} · Collect</button>`);
- const w=atHome(S).filter(s=>s.wild>0);if(w.length&&!atHome(S).some(s=>s.wild===0&&!isLight(S,s)))items.push(`<button data-act="go" data-go="c-${w[0].id}">${w.length} wild · nobody home to settle</button>`);
- if(basementLeft(S)&&S.basement.sitAt==null&&S.light>=sitCost(S))items.push(`<button data-act="sit">Light enough · Sit</button>`);
- const wt=atHome(S).find(s=>s.wild===0);if(wt&&outCount(S)<S.slots)items.push(`<button data-act="go" data-go="street">${esc(wt.name)} waiting · slot free</button>`);
+function bar(){const items=[];for(const n of S.notices)items.push(`<button data-act="dismiss" data-id="${n.id}">${esc(n.text.split(':')[0])} · Collect</button>`);
+ const wild=homeKinds(S).filter(T=>isWild(S,T));if(wild.length&&tameRateHome(S)===0)items.push(`<button data-act="go" data-go="street">${wild.length} wild · nobody home to settle</button>`);
+ if(basementLeft(S)&&S.basement.sitAt==null&&S.light>=sitCost(S))items.push(`<button data-act="go" data-go="app">Light enough · Sit</button>`);
+ const idle=homeKinds(S).find(T=>!isWild(S,T)&&orig(S,T).body&&orig(S,T).loc.k!=='road');const empty=HOUSES.find(h=>S.rep>=h.rep&&!kindAt(S,h.h));if(idle&&empty)items.push(`<button data-act="go" data-go="street">${esc(orig(S,idle).name)} home · ${esc(empty.n.split(',')[0])} is empty</button>`);
  return items.length?`<div class="bar-b">${items.join('')}</div>`:'';}
 
+// --- the sheet (one kind) ---
+function sheet(T){const o=orig(S,T);const wild=isWild(S,T);const Hs=T.post?HOUSES[T.post.h-1]:null;const bd=T.post?breakdown(S,T,T.post.h):null;const price=scrapPrice(S,T.sp);const da=previewAwaken(T);
+ const lines=[];if(bd){lines.push(`${money(bd.base)} g each · ${esc(Hs.n)}`);if(bd.u>1)lines.push(`×${bd.u} · her kind${origAway(S,T)?' (she is away)':''}`);if(bd.fit>1)lines.push(`×${bd.fit} · ${T.aff} ${gradeOf(o.v[T.aff])} over ${Hs.ask}`);if(bd.fav>1)lines.push(`×1.5 · ${esc(Hs.n.split(',')[0])} likes ${T.aff}`);if(bd.fed>1)lines.push(`×${bd.fed.toFixed(2)} · fed by ${esc(orig(S,kindAt(S,T.post.h-1)).name)} above`);if(bd.quell<1)lines.push('×0.75 · quelled by a neighbour');if(bd.mile>1)lines.push(`×${bd.mile} · a family of ${T.count}`);if(bd.toll)lines.push(`+${pct(bd.toll)}% · Toll on the street`);if(bd.sweep)lines.push(`+${pct(bd.sweep)}% · swept by a neighbour`);if(bd.steam)lines.push(`+${pct(bd.steam)}% · her own Steam`);}
+ const houses=HOUSES.filter(h=>S.rep>=h.rep&&!(T.post&&T.post.h===h.h));
+ const joinInto=T.count===1&&!wild&&!T.post&&o.body&&o.loc.k!=='road'?kinds(S).filter(K=>K!==T&&K.sp===T.sp&&K.aff===T.aff&&!isWild(S,K)):[];
+ return `<div class="row sb"><div class="row" style="gap:10px">${o.body?portrait(T.sp,{aff:T.aff,live:!wild,wild,size:72}):`<span class="frame">${portrait(T.sp,{aff:T.aff,size:72})}</span>`}<div><div class="hl big">${esc(o.name)}${wild?' <span class="wildtag">WILD</span>':''}</div><div class="muted">${esc(SP[T.sp].y)} · the ${SP[T.sp].n.toLowerCase()}${SP[T.sp].t===2?' (tier 2)':''}</div><div class="small">${T.count>1?`${esc(o.name)} and ${T.count-1} of her kind${T.roll.length?': '+T.roll.map(esc).join(', ')+(T.count-1>T.roll.length?' and '+(T.count-1-T.roll.length)+' more':''):''}`:'First of her kind'}</div></div></div><button data-act="close" data-k="sheet">Close</button></div>
+ ${pips(T)}<div class="small" style="margin-top:4px"><b>${ABIL[abil(T)].n}</b> · ${ABIL[abil(T)].text} · <i>${esc(abilityLive(T))}</i></div>
+ <div class="row" style="margin-top:6px"><input id="rn" maxlength="18" value="${esc(T.name)}" aria-label="Kind name" style="width:9em"><button data-act="rename" data-id="${T.id}">Rename her kind</button>${T.post?`<span class="muted small">caps: ${AFF.map(a=>AB[a]+' '+gradeOf(caps(T.sp)[a])).join(' ')}</span>`:''}</div>
+ ${bd?`<div class="kick" style="margin-top:10px">${esc(Hs.n)} · ${money(bd.rate)} g/min</div><div class="small">${lines.join('<br>')}</div><div class="row" style="margin-top:6px"><button data-act="unassign" data-id="${T.id}">Bring her kind home</button></div>`:''}
+ ${!wild&&o.body&&o.loc.k!=='road'?`<div class="kick" style="margin-top:10px">${T.post?'Move to':'Send to'}</div><div class="row">${houses.map(h=>{const why=canAssign(S,T.id,h.h);const p=why?null:previewAssign(T,h.h);const occ=kindAt(S,h.h);return `<button class="${why?'':'pri'}" data-act="assign" data-id="${T.id}" data-h="${h.h}" ${why?'disabled':''}>${esc(h.n.split(',')[0])}${why?' · '+esc(why):' → '+money(p.rate)+' g/min'+(p.fed>1?' · fed ↑':'')+(p.quell<1?' · quelled ↓':'')+(occ?' · swaps with '+esc(orig(S,occ).name):'')}</button>`;}).join('')}</div>`:''}
+ <div class="kick" style="margin-top:10px">Grow her kind</div><div class="row">${wild?'<span class="muted small">Tame her first.</span>':`<button class="pri" data-act="awaken" data-id="${T.id}" ${price==null||S.gold<price||S.light<CFG.awaken?'disabled':''}>Awaken another · ${price==null?'rep '+CFG.t2rep:(price===0?'free':price+' g')} + ${CFG.awaken} light${T.post?' · +'+money(da)+' g/min':''}</button>
+  ${S.market.stock.map((it,i)=>it.kind==='food'&&!it.sold&&o.body&&o.loc.k!=='road'?`<button data-act="feed" data-i="${i}" data-id="${T.id}" ${S.gold<foodPrice(T)?'disabled':''}>Feed ${it.a} · ${foodPrice(T)} g · +${Math.min(feedGain(o,it.a),caps(T.sp)[it.a]-o.v[it.a])} → ${gradeOf(Math.min(caps(T.sp)[it.a],o.v[it.a]+feedGain(o,it.a)))}${Math.min(caps(T.sp)[it.a],o.v[it.a]+feedGain(o,it.a))}</button>`:'').join('')}`}
+  ${joinInto.map(K=>`<button data-act="merge" data-id="${T.id}" data-dst="${K.id}">${esc(o.name)} joins ${esc(kindName(K))}</button>`).join('')}
+  ${!o.body?shelf(S).filter(b=>S.bodies[b].sp===T.sp).map(b=>`<button class="pri" data-act="rehouse" data-id="${T.id}" data-b="${b}">Take the ${SP[T.sp].n.toLowerCase()} on the shelf</button>`).join('')+(T.count>1?`<button data-act="borrow" data-id="${T.id}">Borrow a body from her kind (×${T.count-1})</button>`:''):''}</div>
+ ${o.loc.k==='road'?`<div class="muted small" style="margin-top:8px">${esc(o.name)} is on ${esc(ROADS[o.loc.r].n)}, back in ${dur(o.loc.done-now())}.</div>`:''}`;}
+
 function render(){if(UI.foreign){$('#app').innerHTML='<div class="box" style="margin-top:40px"><div class="hl">Open in another tab</div>Ninety-Nine is running in another tab. Close this one.</div>';return;}
- const ae=document.activeElement;if(ae&&/SELECT|INPUT|TEXTAREA/.test(ae.tagName)&&!UI.modal)return;
- $('#app').innerHTML=mast()+shop()+`<div id="street"></div>`+street()+roads()+market()+ledger()+bar();
- $('#modal').innerHTML=UI.modal?`<div class="ov"><div class="card">${UI.modal}</div></div>`:'';}
+ const ae=document.activeElement;if(ae&&/SELECT|INPUT|TEXTAREA/.test(ae.tagName))return;
+ $('#app').innerHTML=mast()+hozuki()+bench()+strip()+street()+roads()+market()+ledger()+bar();
+ const m=UI.modal?UI.modal:UI.sheet&&S.kinds[UI.sheet]?sheet(S.kinds[UI.sheet]):null;if(UI.sheet&&!S.kinds[UI.sheet])UI.sheet=null;
+ $('#modal').innerHTML=m?`<div class="ov"><div class="card">${m}</div></div>`:'';}
 
 // --- modals ---
-function reveal(s){const sp=spOf(S,s);UI.modal=`<div class="kick">It woke</div><div class="rv">${portrait(sp,{live:true,wild:s.wild>0,size:120})}<div class="hl big">${esc(s.name)}</div><div>${esc(s.yokai)} · the ${SP[sp].n.toLowerCase()}${s.wild>0?' · <span class="wildtag">WILD</span>':''}</div><div class="muted">${SP[sp].a} ${gradeOf(s.v[SP[sp].a])}${s.wild>0?' · woke in the dark; needs taming before it can work':' · ready to work'}</div></div><div class="row" style="justify-content:flex-end;margin-top:10px"><button class="pri" data-act="close" data-k="reveal">Close</button></div>`;}
-function awayCard(ev,gap){const wild=ev.filter(e=>e.k==='wild'),brk=ev.filter(e=>e.k==='break'),ret=ev.filter(e=>e.k==='return'),wk=ev.filter(e=>e.k==='wake'),tm=ev.filter(e=>e.k==='tamed'),cyc=ev.filter(e=>e.k==='cycle');
- const gold=g(S.gold-UI.goldBefore),rep=S.rep-UI.repBefore;const opened=HOUSES.filter(h=>h.rep>UI.repBefore&&h.rep<=S.rep);const capped=gap>S.cap*H;
- const li=[];const nm=e=>esc((S.spirits[e.sid]||{}).name||'?');
- wild.forEach(e=>li.push(`<li class="hot">${nm(e)} woke <b>wild</b>${e.from==='road'?' on the road and came home':' in the basement'}. It needs someone tame at home.</li>`));
- brk.forEach(e=>li.push(`<li class="hot">${nm(e)} came home without a body. Keep the loot; find it a body.</li>`));
- ret.forEach(e=>li.push(`<li>${nm(e)} is back: ${e.gold} g${e.got.length?', '+e.got.join(', '):''}.</li>`));
- wk.forEach(e=>li.push(`<li>${nm(e)} woke tame.</li>`));tm.forEach(e=>li.push(`<li>${nm(e)} is tame now.</li>`));
+function reveal(T){const o=orig(S,T);UI.modal=`<div class="kick">It woke</div><div class="rv">${portrait(T.sp,{aff:T.aff,live:true,wild:o.wild>0,size:120})}<div class="hl big">${esc(o.name)}</div><div>${esc(SP[T.sp].y)} · the ${SP[T.sp].n.toLowerCase()}${o.wild>0?' · <span class="wildtag">WILD</span>':''}</div><div class="muted">${T.aff} ${gradeOf(o.v[T.aff])} · ${ABIL[abil(T)].n}: ${ABIL[abil(T)].text}</div><div class="small" style="margin-top:6px">${o.wild>0?'Woke in the dark; needs taming before her kind can work.':'First of her kind. Her kind is "'+esc(o.name)+'" until you rename it.'}</div></div><div class="row" style="justify-content:flex-end;margin-top:10px"><button class="pri" data-act="close" data-k="reveal">Close</button></div>`;}
+function awayCard(ev,gap){const nm=e=>{const T=S.kinds[e.tid];return esc(T?orig(S,T).name:'?');};const wild=ev.filter(e=>e.k==='wild'),brk=ev.filter(e=>e.k==='break'),ret=ev.filter(e=>e.k==='return'),wk=ev.filter(e=>e.k==='wake'),jn=ev.filter(e=>e.k==='join'),tm=ev.filter(e=>e.k==='tamed'),cyc=ev.filter(e=>e.k==='cycle');
+ const gold=g(S.gold-UI.goldBefore),rep=S.rep-UI.repBefore;const opened=HOUSES.filter(h=>h.rep>UI.repBefore&&h.rep<=S.rep);const capped=gap>S.cap*H;const li=[];
+ wild.forEach(e=>li.push(`<li class="hot">${nm(e)} woke <b>wild</b>${e.from==='road'?' on the road and came home':' in the basement'}. Someone tame has to stay home for her.</li>`));
+ brk.forEach(e=>li.push(`<li class="hot">${nm(e)} came home without a body. Her kind keeps the house.</li>`));
+ ret.forEach(e=>li.push(`<li>${nm(e)} is back: ${e.gold} g${e.got.length?', '+e.got.join(', '):''}.</li>`));wk.forEach(e=>li.push(`<li>${nm(e)} woke tame, first of her kind.</li>`));jn.forEach(e=>li.push(`<li>One more joined ${nm(e)}'s kind.</li>`));tm.forEach(e=>li.push(`<li>${nm(e)} is tame now.</li>`));
  if(cyc.length||gold)li.push(`<li>${gold} g earned on the street · ${cyc.length} cycles · +${rep} rep${opened.length?' · opened: '+opened.map(h=>esc(h.n)).join(', '):''}.</li>`);
- if(S.light>=lightCeiling(S))li.push('<li>The lantern is full.</li>');
- const fd=fuseDue(S);if(fd)li.push(`<li>Next item wakes wild in ${dur(fd-now())}.</li>`);
- li.push(`<li class="muted">Gone ${dur(gap)}${capped?`; the street pays for ${S.cap}. (Away pays longer: see the masthead.)`:'.'}</li>`);
+ if(S.light>=lightCeiling(S))li.push('<li>The lantern is full.</li>');const fd=fuseDue(S);if(fd)li.push(`<li>Next item wakes wild in ${dur(fd-now())}.</li>`);
+ li.push(`<li class="muted">Gone ${dur(gap)}${capped?`; the street pays for ${S.cap}.`:'.'}</li>`);
  UI.modal=`<div class="kick">While you were out</div><ul class="away">${li.join('')}</ul><div class="row" style="justify-content:flex-end"><button class="pri" data-act="close" data-k="card">Open the shop</button></div>`;S.seen.card=1;}
 
 // --- loop ---
 let timer=null;function save(){S.savedAt=now();S.owner=OWNER;try{localStorage.setItem('nn-save',exportState(S));}catch(e){}}
-function onEvents(ev){for(const e of ev)if(e.k==='wake'&&!UI.modal&&document.visibilityState==='visible')reveal(S.spirits[e.sid]);hozukiCheck(ev);}
-function tick(){if(UI.foreign)return;const ev=advance(S,now());if(ev.length){onEvents(ev);save();}else if(now()-S.savedAt>10e3)save();render();}
-function act(f){const r=f();if(typeof r==='string'){flash(r);}S.light=Math.min(S.light,lightCeiling(S));hozukiCheck([]);save();render();}
 function flash(t){const d=document.createElement('div');d.className='flash';d.textContent=t;document.body.appendChild(d);setTimeout(()=>d.remove(),1800);}
+function onEvents(ev){for(const e of ev){if(e.k==='wake'&&!UI.modal&&document.visibilityState==='visible')reveal(S.kinds[e.tid]);if(e.k==='join'&&document.visibilityState==='visible')flash(`${orig(S,S.kinds[e.tid]).name}'s kind ×${S.kinds[e.tid].count}`);}hozukiCheck(ev);}
+function tick(){if(UI.foreign)return;const ev=advance(S,now());if(ev.length){onEvents(ev);save();}else if(now()-S.savedAt>10e3)save();render();}
+function act(f){const r=f();if(typeof r==='string'&&!/^k\d+$/.test(r))flash(r);S.light=Math.min(S.light,lightCeiling(S));hozukiCheck([]);save();render();return r;}
+const OPEN="You're late. Ninety-nine downstairs; the first wakes in five minutes. It's a candle, and a candle wants wax. Pack it, sit with it, it wakes tame.";
 function start(){let loaded=null;try{const txt=localStorage.getItem('nn-save');if(txt)loaded=importState(txt);}catch(e){loaded=null;}
  const t=now();if(loaded){S=loaded;UI.goldBefore=S.gold;UI.repBefore=S.rep;const gap=t-S.savedAt;const ev=advance(S,t);if(gap>CFG.card)awayCard(ev,gap);else onEvents(ev);}
- else{S=newGame((t&0xffff)+1,t);say('open',"You're late. Ninety-nine downstairs, and the first wakes in five minutes. Sit with it so it wakes tame; that costs light, and I've enough for one.");speak();}
+ else{S=newGame((t&0xffff)+1,t);say('open',OPEN,6);speak();}
  save();render();timer=setInterval(tick,1000);
  document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')tick();});
  window.addEventListener('storage',e=>{if(e.key!=='nn-save'||!e.newValue)return;try{if(JSON.parse(e.newValue).owner!==OWNER){UI.foreign=true;clearInterval(timer);render();}}catch(x){}});}
 
 document.addEventListener('click',e=>{const b=e.target.closest('[data-act]');if(!b||b.disabled)return;const a=b.dataset.act,id=b.dataset.id,t=now();
  if(a==='tap'){if(!tap(S))flash('The lantern is full. Spend some.');render();return;}
- if(a==='open'){UI.open[id]=!UI.open[id];render();return;}
- if(a==='close'){const k=b.dataset.k;UI.modal=null;if(k==='reveal'&&!S.seen.reveal1){S.seen.reveal1=1;}hozukiCheck([]);save();render();return;}
- if(a==='go'||a==='dismiss'){if(a==='dismiss')dismiss(S,id);save();render();const el=document.getElementById(b.dataset.go);if(el)el.scrollIntoView({behavior:'smooth',block:'center'});return;}
+ if(a==='sheet'){UI.sheet=id;render();return;}
+ if(a==='close'){const k=b.dataset.k;if(k==='sheet')UI.sheet=null;else UI.modal=null;if(k==='reveal')S.seen.reveal1=1;hozukiCheck([]);save();render();return;}
+ if(a==='go'||a==='dismiss'){if(a==='dismiss')dismiss(S,id);save();render();const el=document.getElementById(b.dataset.go||'app');if(el)el.scrollIntoView({behavior:'smooth',block:'start'});return;}
+ if(a==='bmat'){UI.bench.mode='found';UI.bench.aff=b.dataset.a;render();return;}
+ if(a==='bjoin'){UI.bench.mode='join';UI.bench.join=id;render();return;}
  if(a==='depth'){(UI.road[b.dataset.r]||(UI.road[b.dataset.r]={})).d=+b.dataset.d;render();return;}
- if(a==='sit')return act(()=>sit(S,t));
- if(a==='send')return act(()=>send(S,t,id,{h:+b.dataset.h}));
- if(a==='road')return act(()=>send(S,t,id,{r:b.dataset.r,d:UI.road[b.dataset.r].d}));
- if(a==='recall'){const s=S.spirits[id];if(s.loc.sec%HOUSES[s.loc.h-1].cyc&&!confirm(`Recall ${s.name}? The half-finished cycle gives no rep.`))return;return act(()=>recall(S,t,id));}
- if(a==='slot')return act(()=>buySlot(S));
- if(a==='cap')return act(()=>buyCap(S));
+ if(a==='sit'){const bs=UI.bench;return act(()=>sit(S,t,bs.mode==='join'?{join:bs.join}:{found:{aff:bs.aff}}));}
+ if(a==='found'){const sel=document.querySelector(`select[data-f="bodymat"][data-b="${b.dataset.b}"]`);const aff=sel?sel.value:b.dataset.a;return act(()=>{const r=found(S,t,b.dataset.b,aff);if(r&&/^k\d+$/.test(r)){reveal(S.kinds[r]);return null;}return r;});}
+ if(a==='join')return act(()=>join(S,t,b.dataset.b,id));
+ if(a==='scrap')return act(()=>buyScrap(S,b.dataset.sp));
+ if(a==='awaken')return act(()=>awaken(S,t,id));
+ if(a==='assign'){UI.sheet=null;return act(()=>assign(S,t,id,+b.dataset.h));}
+ if(a==='unassign')return act(()=>unassign(S,t,id));
+ if(a==='merge'){const A=S.kinds[id],B=S.kinds[b.dataset.dst];if(!confirm(`${orig(S,A).name} joins ${B.name}'s kind. Her own values are lost; her name stays on the roll.`))return;UI.sheet=null;return act(()=>merge(S,t,id,b.dataset.dst));}
+ if(a==='feed')return act(()=>feed(S,t,+b.dataset.i,id));
  if(a==='buy')return act(()=>buyStock(S,t,+b.dataset.i));
- if(a==='food')return act(()=>buyStock(S,t,+b.dataset.i,id));
- if(a==='rehouse')return act(()=>rehouse(S,id,b.dataset.b));
+ if(a==='road')return act(()=>send(S,t,id,b.dataset.r,UI.road[b.dataset.r].d));
+ if(a==='rehouse')return act(()=>rehouse(S,t,id,b.dataset.b));
+ if(a==='borrow')return act(()=>borrow(S,t,id));
+ if(a==='rename'){const v=$('#rn')?$('#rn').value:'';return act(()=>rename(S,id,v));}
  if(a==='sell')return act(()=>sellBody(S,b.dataset.b));
+ if(a==='cap')return act(()=>buyCap(S));
  if(a==='export'){const txt=exportState(S);$('#pk').value=txt;navigator.clipboard&&navigator.clipboard.writeText(txt).catch(()=>{});flash('Save copied below.');return;}
- if(a==='import'){try{const o=importState($('#pk').value);S=o;UI.goldBefore=S.gold;UI.repBefore=S.rep;const ev=advance(S,t);onEvents(ev);save();render();flash('Loaded.');}catch(x){flash('Not a Ninety-Nine save.');}return;}
- if(a==='new'){if(!confirm('Start over? The basement refills and everyone is gone.'))return;S=newGame((t&0xffff)+1,t);say('open',"You're late. Ninety-nine downstairs, and the first wakes in three hours. Sit with it so it wakes tame; that costs light, and I've enough for one.");speak();UI.open={};UI.modal=null;save();render();return;}
+ if(a==='import'){try{S=importState($('#pk').value);UI.goldBefore=S.gold;UI.repBefore=S.rep;const ev=advance(S,t);onEvents(ev);save();render();flash('Loaded.');}catch(x){flash('Not a Ninety-Nine save.');}return;}
+ if(a==='new'){if(!confirm('Start over? The basement refills and everyone is gone.'))return;S=newGame((t&0xffff)+1,t);say('open',OPEN,6);speak();UI.sheet=null;UI.modal=null;UI.bench={};save();render();return;}
  if(a==='skip'){const ms=b.dataset.s*SEC;shiftTimes(S,-ms);UI.goldBefore=S.gold;UI.repBefore=S.rep;const ev=advance(S,t);awayCard(ev,ms);hozukiCheck(ev);save();render();return;}});
 document.addEventListener('toggle',e=>{if(e.target.matches&&e.target.matches('[data-dbg]'))UI.dbg=e.target.open;},true);
-document.addEventListener('change',e=>{const s=e.target.closest('[data-f]');if(!s)return;if(s.dataset.f==='roadsid')(UI.road[s.dataset.r]||(UI.road[s.dataset.r]={d:0})).sid=s.value;if(s.dataset.f==='food')UI.food[s.dataset.i]=s.value;render();});
+document.addEventListener('change',e=>{const s=e.target.closest('[data-f]');if(!s)return;if(s.dataset.f==='roadtid')(UI.road[s.dataset.r]||(UI.road[s.dataset.r]={d:0})).tid=s.value;if(s.dataset.f==='food')UI.food[s.dataset.i]=s.value;if(s.dataset.f==='bodymat')UI.food['b'+s.dataset.b]=s.value;render();});
 start();
 </script>
 </body></html>

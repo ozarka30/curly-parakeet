@@ -9,4 +9,4 @@ Prototype of a yokai vessel-shop sim. Play it at https://ozarka30.github.io/curl
 - `tools/` — `check_tut.js` (rules test, plays the tutorial), `render.js` (Playwright click-through), `postgame.js` (board sampler), `dump.js` (data tables). Run against `index.html`.
 
 ## Ninety-Nine (idle companion)
-`ninety-nine/index.html` — the idle game on the same theme, live at https://ozarka30.github.io/curly-parakeet/ninety-nine/. Spec in `ninety-nine/SPEC.md`; tests `node ninety-nine/tools/test.js ninety-nine/index.html`; click-through `node ninety-nine/tools/render.js ninety-nine/index.html shot.png`.
+`ninety-nine/index.html` — the idle game on the same theme, live at https://ozarka30.github.io/curly-parakeet/ninety-nine/. Specs: `ninety-nine/SPEC.md` (v0.1 base rules) and `ninety-nine/SPEC-v0.2.md` (kinds, families, the street formation); tests `node ninety-nine/tools/test.js ninety-nine/index.html`; click-through `node ninety-nine/tools/render.js ninety-nine/index.html shot.png`.
