@@ -1,0 +1,432 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#efe4c9">
+<title>Ninety-Nine</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Rye&family=Oswald:wght@400;600&family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&display=swap">
+<style>
+/* Same paper as Yorishiro Weekly: one newsprint column, black ink, color only where something is possessed. */
+:root{--paper:#efe4c9;--paper2:#f6eedc;--ink:#1c1915;--ink2:#4a4239;--muted:#7a7064;--red:#c8362b;
+ --ember:#c8362b;--frost:#4e9fd1;--bloom:#4f8f3a;--clay:#c28a2c;--tide:#2b3f8c;
+ --fd:'Rye',Georgia,serif;--fh:'Oswald','Arial Narrow',Arial,sans-serif;--fb:'Libre Baskerville',Georgia,serif;color-scheme:light}
+*{box-sizing:border-box}
+html{scroll-padding-bottom:90px}
+body{margin:0;background:var(--paper);color:var(--ink);font-family:var(--fb);font-size:14px;line-height:1.45;background-image:radial-gradient(rgba(28,25,21,.07) 1px,transparent 1.2px);background-size:5px 5px;
+ padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-bottom:96px}
+h1,h2,h3,p{margin:0}
+button{font-family:var(--fh);text-transform:uppercase;letter-spacing:.06em;font-size:12px;border:2px solid var(--ink);background:var(--paper2);color:var(--ink);padding:6px 10px;min-height:34px;cursor:pointer;text-align:left}
+button:hover{background:var(--ink);color:var(--paper2)}
+button.pri{background:var(--ink);color:var(--paper2)} button.pri:hover{background:var(--red);border-color:var(--red)}
+button.red{border-color:var(--red);color:var(--red)} button.red:hover{background:var(--red);color:#fff}
+button.big{font-size:14px;padding:10px 14px}
+button:disabled{opacity:.45;cursor:not-allowed} button:disabled:hover{background:var(--paper2);color:var(--ink)}
+button:focus-visible,select:focus-visible,textarea:focus-visible{outline:3px solid var(--red);outline-offset:2px}
+select,textarea{font-family:var(--fh);font-size:13px;border:2px solid var(--ink);background:var(--paper2);color:var(--ink);padding:6px;max-width:100%}
+textarea{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:12px;width:100%}
+.wrap{max-width:520px;margin:0 auto}
+.mast{position:sticky;top:0;z-index:5;background:var(--paper);border-top:4px solid var(--ink);border-bottom:2px solid var(--ink);padding:4px 0 4px;margin-bottom:10px}
+@media(max-width:420px){.mast .sub{display:none}}
+.mast h1{font-family:var(--fd);font-size:clamp(22px,6vw,34px);line-height:1}
+.mast .sub{font-family:var(--fh);text-transform:uppercase;letter-spacing:.12em;font-size:10px;color:var(--ink2)}
+.strip{display:flex;flex-wrap:wrap;gap:4px 12px;align-items:center;padding-top:4px;font-family:var(--fh);text-transform:uppercase;letter-spacing:.06em;font-size:11px}
+.strip b{font-size:15px;font-variant-numeric:tabular-nums}
+.strip small{font-size:10px;letter-spacing:.04em;color:var(--ink2)}
+.strip button{min-height:26px;padding:2px 7px;font-size:10px}
+.lantern{border-color:var(--ember);color:var(--ember);min-height:34px!important;font-size:12px!important;padding:4px 10px!important}
+.lantern:hover{background:var(--ember);color:#fff}
+section{margin-top:14px}
+.sec{font-family:var(--fh);font-weight:600;text-transform:uppercase;font-size:18px;letter-spacing:.04em;border-bottom:4px double var(--ink);margin-bottom:8px}
+.box{border:2px solid var(--ink);background:var(--paper2);padding:10px 12px;min-width:0;position:relative;margin-top:8px}
+.box.dbl{outline:1px solid var(--ink);outline-offset:3px}
+.box.ghost{border-style:dashed;background:transparent}
+.box.hoz{border-left:10px solid var(--ember)}
+.box.hoz p{font-size:15px;margin:2px 0 4px}
+.kick{font-family:var(--fh);text-transform:uppercase;letter-spacing:.14em;font-size:10px;color:var(--ink2)}
+.hl{font-family:var(--fh);font-weight:600;text-transform:uppercase;font-size:18px;line-height:1.05;margin:2px 0 4px}
+.hl.big{font-size:26px}
+.muted{color:var(--muted)} .small{font-size:12px}
+.row{display:flex;flex-wrap:wrap;gap:6px 8px;align-items:center} .row.sb{justify-content:space-between}
+.line{padding:6px 0;border-bottom:1px dotted var(--muted)} .line:last-child{border-bottom:0}
+.bd{font-family:var(--fh);text-transform:uppercase;letter-spacing:.06em;font-size:11px;border:1.5px solid var(--ink);padding:2px 7px;background:var(--paper2);white-space:nowrap}
+.bd.aff{border-left-width:6px}
+.price{font-family:var(--fh);font-weight:600;font-size:20px;line-height:1;font-variant-numeric:tabular-nums}
+.price small{font-size:10px;font-weight:400;letter-spacing:.08em;text-transform:uppercase}
+.chips{display:grid;grid-template-columns:1fr;gap:8px}
+@media(min-width:480px){.chips{grid-template-columns:1fr 1fr}}
+.chip{border:2px solid var(--ink);background:var(--paper2);padding:8px 10px;min-width:0}
+.chip.wild{border:2px dashed var(--red);background:repeating-linear-gradient(135deg,var(--paper2) 0 10px,#f0dcc8 10px 12px)}
+.chip.ghost{border-style:dashed;background:transparent}
+.chip.tiny{display:inline-flex;align-items:center;gap:6px;padding:4px 8px;font-size:12px}
+.chip b{font-family:var(--fh);font-size:15px;text-transform:uppercase;letter-spacing:.02em}
+.more{border-top:1px dotted var(--muted);margin-top:6px;padding-top:6px}
+.pips{display:flex;flex-wrap:wrap;gap:4px;margin-top:6px}
+.pip{font-family:var(--fh);font-size:11px;letter-spacing:.04em;border:1.5px solid var(--muted);color:var(--muted);padding:1px 6px;border-radius:2px;background:var(--paper2)}
+.pip.on{border-color:var(--c);color:var(--c)} .pip.nat{font-weight:600;border-width:2px} .pip.nat.on{background:var(--c);color:#fff}
+.wildtag{font-family:var(--fh);font-size:10px;letter-spacing:.1em;color:#fff;background:var(--red);padding:1px 5px}
+.pt.live{filter:drop-shadow(0 0 5px var(--c))}
+.pt.wild{animation:shake .6s infinite}
+@keyframes shake{0%,100%{transform:translateX(0) rotate(0)}25%{transform:translateX(-1.5px) rotate(-2deg)}75%{transform:translateX(1.5px) rotate(2deg)}}
+@media(prefers-reduced-motion:reduce){.pt.wild{animation:none}}
+.house.lit{border-color:var(--c);box-shadow:inset 6px 0 0 var(--c),0 0 14px color-mix(in srgb,var(--c) 40%,transparent)}
+.bar{flex:1;min-width:120px;height:14px;border:2px solid var(--ink);background:var(--paper2)} .bar i{display:block;height:100%;background:var(--ember)}
+.depths{display:grid;gap:4px;margin:6px 0}
+.depth{font-size:11px;letter-spacing:.03em;text-transform:none} .depth.on{background:var(--ink);color:var(--paper2)} .depth.off{opacity:.45}
+.warn{color:var(--red);font-size:12px;margin-top:6px}
+.log{max-height:220px;overflow:auto;font-size:13px} .log div{padding:3px 0;border-bottom:1px dotted var(--muted)}
+.bar-b{position:fixed;left:0;right:0;bottom:0;z-index:6;display:flex;gap:6px;overflow-x:auto;padding:6px max(12px,env(safe-area-inset-left,0px)) max(6px,env(safe-area-inset-bottom,0px));background:var(--ink)}
+.bar-b button{flex:0 0 auto;border-color:var(--paper2);background:var(--ink);color:var(--paper2);white-space:nowrap} .bar-b button:hover{background:var(--red);border-color:var(--red)}
+.ov{position:fixed;inset:0;z-index:20;background:rgba(28,25,21,.55);display:flex;align-items:center;justify-content:center;padding:16px}
+.card{background:var(--paper2);border:3px double var(--ink);padding:14px;max-width:420px;width:100%;max-height:90vh;overflow:auto}
+.rv{text-align:center;padding:8px 0}
+.away{padding-left:18px;margin:8px 0 12px} .away li{margin:4px 0} .away .hot{color:var(--red);font-weight:700}
+.flash{position:fixed;left:50%;top:70px;transform:translateX(-50%);z-index:30;background:var(--ink);color:var(--paper2);font-family:var(--fh);text-transform:uppercase;letter-spacing:.06em;font-size:12px;padding:8px 12px;border:2px solid var(--paper2)}
+summary{cursor:pointer}
+</style></head><body><div class="wrap" id="app"></div><div id="modal"></div>
+<script id="engine">
+// Ninety-Nine engine. Pure rules, no DOM. Every function takes S (the save) and, where time matters, now (epoch ms).
+// advance(S, now) is the only function that moves time. Inlined into index.html at build; node loads it via module.exports.
+const MIN=60e3,H=3600e3;
+const AFF=['Ember','Frost','Bloom','Clay','Tide'];
+const GR=['E','D','C','B','A','S'];
+const gi=v=>Math.max(0,Math.min(5,Math.floor(v/10)));
+const gradeOf=v=>GR[gi(v)];
+const bands=v=>gi(v);
+const askIdx=g=>GR.indexOf(g);
+const SP={
+ candle:{n:'Candle',y:'Rōsoku-bi',a:'Ember',t:1,r:'common',art:'candle',light:1},
+ lantern:{n:'Lantern',y:'Chōchin-obake',a:'Ember',t:2,r:'rare',art:'candle',light:2},
+ chime:{n:'Wind chime',y:'Fūrin-kozō',a:'Frost',t:1,r:'uncommon',art:'chime'},
+ bell:{n:'Bell',y:'Suzu-furunushi',a:'Frost',t:2,r:'rare',art:'chime'},
+ whisk:{n:'Whisk',y:'Sasara-bake',a:'Bloom',t:1,r:'common',art:'whisk'},
+ broom:{n:'Broom',y:'Hōki-gami',a:'Bloom',t:2,r:'rare',art:'whisk'},
+ kokeshi:{n:'Kokeshi',y:'Kokeshi-gami',a:'Bloom',t:1,r:'common',art:'kokeshi',tame:2},
+ doll:{n:'Doll',y:'Ichimatsu-onna',a:'Bloom',t:2,r:'rare',art:'kokeshi',tame:2},
+ teapot:{n:'Teapot',y:'Kyūsu-bōzu',a:'Clay',t:1,r:'uncommon',art:'teapot'},
+ claypot:{n:'Clay pot',y:'Bunbuku-gama',a:'Clay',t:2,r:'rare',art:'teapot'},
+ ladle:{n:'Ladle',y:'Hishaku-bake',a:'Tide',t:1,r:'common',art:'ladle'},
+ bucket:{n:'Bucket',y:'Tsurube-otoshi',a:'Tide',t:2,r:'rare',art:'ladle'}};
+const RW={common:6,uncommon:3,rare:1};
+const CAPS={1:{nat:29,oth:19},2:{nat:39,oth:29}};
+const caps=sp=>{const o={};AFF.forEach(a=>o[a]=a===SP[sp].a?CAPS[SP[sp].t].nat:CAPS[SP[sp].t].oth);return o;};
+const HOUSES=[
+ {h:1,n:"Kōda's bakery",p:'the oven goes cold by dawn',a:'Ember',ask:'D',tier:1,rate:1,rep:0},
+ {h:2,n:'Mrs. Tokiwa, upstairs',p:'company for the long nights',a:'Bloom',ask:'D',tier:1,rate:1,rep:0},
+ {h:3,n:"Umeda's fish stall",p:'the catch spoils by noon',a:'Frost',ask:'D',tier:1,rate:1.2,rep:10},
+ {h:4,n:'Tsuru-no-yu bathhouse',p:'the big bath goes lukewarm',a:'Ember',ask:'C',tier:2,rate:3,rep:60},
+ {h:5,n:"Hana's delivery cart",p:'the round crosses the river',a:'Tide',ask:'C',tier:2,rate:3,rep:60},
+ {h:6,n:'The schoolhouse',p:'forty children in line',a:'Bloom',ask:'C',tier:2,rate:3.5,rep:60},
+ {h:7,n:'The inn by the bridge',p:'every room, every season',a:'Clay',ask:'C',tier:3,rate:9,rep:200},
+ {h:8,n:'The shrine on the hill',p:'the lamps must not go out',a:'Ember',ask:'B',tier:3,rate:10,rep:500}];
+const ROADS={river:{n:'Riverbank Shallows',a:'Tide'},kiln:{n:'Old Kiln Hill',a:'Clay'},pass:{n:'Mountain Pass',a:'Frost'}};
+const DEPTH=[{min:15,ask:'D',gold:20,body:.2,wild:0,grow:3},{min:60,ask:'C',gold:80,body:.4,wild:.1,grow:6},{min:240,ask:'B',gold:300,body:.7,wild:.25,grow:10},{min:720,ask:'A',gold:1200,body:1,wild:.5,grow:15}];
+const SLOTS=[60,300,1500,7500,37500,150000];// price of slot 3..8
+const CAPUP={4:[8,1000],8:[12,5000]};// offline cap hours -> [next hours, price]
+const SELL={1:75,2:600};
+const CFG={fuse:3*H,sit:2*MIN,sitFirst:45e3,wild:60,cycle:30,grow:60,food:12,foodGain:6,stray:300,strayRep:5,card:5*MIN,basement:99};
+const NAMES=['Pochi','Tama','Kuro','Momo','Chibi','Goro','Yuki','Kin','Fuku','Hachi','Mame','Nene','Suzu','Taro','Ume','Koro','Hime','Sora','Riku','Nori'];
+
+function rand(S){let t=S.rng=(S.rng+0x6D2B79F5)|0;t=Math.imul(t^t>>>15,t|1);t^=t+Math.imul(t^t>>>7,t|61);return((t^t>>>14)>>>0)/4294967296;}
+const rint=(S,a,b)=>a+Math.floor(rand(S)*(b-a+1));
+function pickSp(S,tier){const ids=Object.keys(SP).filter(k=>!tier||SP[k].t===tier);const tot=ids.reduce((s,k)=>s+RW[SP[k].r],0);let r=rand(S)*tot;for(const k of ids){r-=RW[SP[k].r];if(r<0)return k;}return ids[ids.length-1];}
+const uid=(S,p)=>p+(S.n++);
+function log(S,t,text){S.log.unshift({t,text});if(S.log.length>100)S.log.length=100;}
+function newBody(S,sp){const id=uid(S,'b');S.bodies[id]={sp};return id;}
+function newSpirit(S,sp,wild,t){const id=uid(S,'s');const v={};AFF.forEach(a=>v[a]=0);v[SP[sp].a]=10;
+ const s={id,name:NAMES[rint(S,0,NAMES.length-1)],yokai:SP[sp].y,v,wild:wild?CFG.wild:0,cycles:{},body:newBody(S,sp),loc:{k:'home'},born:t};S.spirits[id]=s;return s;}
+
+// --- derived ---
+const spOf=(S,s)=>s.body?S.bodies[s.body].sp:null;
+const all=S=>Object.values(S.spirits);
+const atHome=S=>all(S).filter(s=>s.body&&s.loc.k==='home');
+const outCount=S=>all(S).filter(s=>s.loc.k==='house'||s.loc.k==='road').length;
+const wildAtHome=S=>atHome(S).filter(s=>s.wild>0).length;
+const isLight=(S,s)=>!!(s.body&&SP[spOf(S,s)].light);
+const lightMakers=S=>atHome(S).filter(s=>s.wild===0&&isLight(S,s));
+const basementLeft=S=>S.basement.order.length-S.basement.next;
+const sitCost=S=>10+S.basement.next;
+const lightCeiling=S=>20+(basementLeft(S)>0?sitCost(S):0)+10*lightMakers(S).length;
+const lightRate=S=>1+lightMakers(S).reduce((t,s)=>t+bands(s.v.Ember)*SP[spOf(S,s)].light,0);
+const occupant=(S,h)=>all(S).find(s=>s.loc.k==='house'&&s.loc.h===h)||null;
+const shelf=S=>Object.keys(S.bodies).filter(b=>!all(S).some(s=>s.body===b));
+const box=S=>all(S).filter(s=>!s.body);
+const bestBand=s=>Math.max(...AFF.map(a=>bands(s.v[a])));
+function fitMult(v,ask){const d=gi(v)-askIdx(ask);return d<0?0:d===0?1:d===1?1.5:2;}
+const fit=(S,sid,aff,ask)=>fitMult(S.spirits[sid].v[aff],ask);
+function tameRate(S,s){return (1+0.5*Math.max(0,bestBand(s)-1))*(SP[spOf(S,s)].tame||1);}
+const rentalRate=S=>all(S).filter(s=>s.loc.k==='house').reduce((t,s)=>{const Hs=HOUSES[s.loc.h-1];return t+Hs.rate*fitMult(s.v[Hs.a],Hs.ask);},0);
+const slotPrice=S=>SLOTS[S.slots-2];// undefined when maxed
+const capUp=S=>CAPUP[S.cap]||null;
+const nextHouse=S=>HOUSES.find(h=>h.rep>S.rep)||null;
+
+// --- time ---
+function shiftTimes(S,d){S.tick+=d;const B=S.basement;if(B.fuseAt!=null)B.fuseAt+=d;if(B.sitAt!=null)B.sitAt+=d;
+ for(const s of all(S)){if(s.loc.at!=null)s.loc.at+=d;if(s.loc.done!=null)s.loc.done+=d;}}
+function syncFuse(S,h){const B=S.basement;const canRun=basementLeft(S)>0&&B.sitAt==null&&wildAtHome(S)<2;
+ if(!canRun&&B.fuseAt!=null){B.fuseMs+=h-B.fuseAt;B.fuseAt=null;}
+ else if(canRun&&B.fuseAt==null)B.fuseAt=h;}
+const fuseDue=S=>{const B=S.basement;return B.fuseAt==null?null:B.fuseAt+CFG.fuse-B.fuseMs;};
+const sitDue=S=>{const B=S.basement;return B.sitAt==null?null:B.sitAt+(B.next===0?CFG.sitFirst:CFG.sit);};
+function wake(S,t,wild,ev){const B=S.basement;const spc=B.order[B.next];B.next++;B.sitAt=null;B.fuseAt=null;B.fuseMs=0;
+ const s=newSpirit(S,spc,wild,t);
+ if(wild){ev.push({t,k:'wild',sid:s.id,from:'basement'});log(S,t,`The ${SP[spc].n.toLowerCase()} woke wild in the dark. ${s.name} needs taming.`);}
+ else{ev.push({t,k:'wake',sid:s.id});log(S,t,`${s.name} woke tame: a ${SP[spc].y} (${SP[spc].n.toLowerCase()}), ${SP[spc].a} D.`);}
+ if(basementLeft(S)===0){ev.push({t,k:'empty'});log(S,t,"That's all of them. The basement is empty.");}
+ syncFuse(S,t);return s;}
+function roadReturn(S,s,ev){const L=s.loc,R=ROADS[L.r],D=DEPTH[L.d],t=L.done;
+ S.gold+=L.loot.gold;const c=caps(spOf(S,s));const before=s.v[R.a];s.v[R.a]=Math.min(c[R.a],s.v[R.a]+D.grow);
+ const got=[];if(L.loot.body){newBody(S,L.loot.body);got.push('a '+SP[L.loot.body].n.toLowerCase()+' body');}
+ if(L.loot.wild){const w=newSpirit(S,L.loot.wild,true,t);got.push('a wild '+SP[L.loot.wild].n.toLowerCase()+' ('+w.name+')');ev.push({t,k:'wild',sid:w.id,from:'road'});}
+ s.loc={k:'home'};
+ let text=`${s.name} is back from ${R.n}: ${L.loot.gold} g${got.length?', '+got.join(', '):''}`;
+ if(gi(before)!==gi(s.v[R.a])){ev.push({t,k:'band',sid:s.id,a:R.a});text+=`, ${R.a} ${gradeOf(s.v[R.a])} now`;}
+ if(L.loot.breaks){delete S.bodies[s.body];s.body=null;ev.push({t,k:'break',sid:s.id});text+=`. The ${SP[L.loot.sp].n.toLowerCase()} broke; ${s.name} is home unhoused`;}
+ text+='.';ev.push({t,k:'return',sid:s.id,gold:L.loot.gold,got,breaks:L.loot.breaks});log(S,t,text);
+ S.notices.push({id:uid(S,'n'),k:'return',sid:s.id,text});}
+function sweep(S,h,ev){for(;;){let best=null;
+  for(const s of all(S))if(s.loc.k==='road'&&s.loc.done<=h&&(!best||s.loc.done<best.t))best={t:s.loc.done,f:()=>roadReturn(S,s,ev)};
+  const sd=sitDue(S);if(sd!=null&&sd<=h&&(!best||sd<best.t))best={t:sd,f:()=>wake(S,sd,false,ev)};
+  const fd=fuseDue(S);if(fd!=null&&fd<=h&&(!best||fd<best.t))best={t:fd,f:()=>wake(S,fd,true,ev)};
+  if(!best)break;best.f();syncFuse(S,best.t);}
+ syncFuse(S,h);}
+function accrue(S,t,ev){
+ for(const s of all(S)){if(s.loc.k!=='house')continue;const Hs=HOUSES[s.loc.h-1];const f=fitMult(s.v[Hs.a],Hs.ask);const pay=Hs.rate*f;S.gold+=pay;s.loc.min++;s.loc.earned=(s.loc.earned||0)+pay;
+  if(s.loc.min%CFG.grow===0){const c=caps(spOf(S,s));const b=s.v[Hs.a];if(b<c[Hs.a]){s.v[Hs.a]=b+1;if(gi(b)!==gi(b+1)){ev.push({t,k:'band',sid:s.id,a:Hs.a});log(S,t,`${s.name} is ${Hs.a} ${gradeOf(b+1)} now.`);}}}
+  if(s.loc.min%CFG.cycle===0){const r=Hs.tier*(fitMult(s.v[Hs.a],Hs.ask)>=2?2:1);S.rep+=r;s.cycles[Hs.h]=(s.cycles[Hs.h]||0)+1;ev.push({t,k:'cycle',sid:s.id,h:Hs.h,rep:r});}}
+ S.gold=Math.round(S.gold*100)/100;
+ S.light=Math.min(lightCeiling(S),S.light+lightRate(S));
+ const wilds=atHome(S).filter(s=>s.wild>0).sort((a,b)=>b.wild-a.wild||(a.id<b.id?-1:1));
+ if(wilds.length){const w=wilds[0];let r=0;for(const x of atHome(S))if(x.wild===0&&!isLight(S,x))r+=tameRate(S,x);
+  if(r>0){w.wild=Math.max(0,w.wild-r);if(w.wild===0){S.rep+=2;ev.push({t,k:'tamed',sid:w.id});log(S,t,`${w.name} is tame. +2 rep.`);syncFuse(S,t);}}}}
+function localDay(now){const d=new Date(now);return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');}
+function restock(S,now){const stock=[];
+ for(let i=0;i<2;i++){const t2=S.rep>=200&&i===1;stock.push({kind:'body',sp:pickSp(S,t2?2:1),price:t2?rint(S,800,1600):rint(S,100,200),sold:false});}
+ const affs=AFF.slice();for(let i=0;i<3;i++)stock.push({kind:'food',a:affs.splice(rint(S,0,affs.length-1),1)[0],price:CFG.food,sold:false});
+ stock.push({kind:'stray',sp:pickSp(S,1),price:CFG.stray+CFG.strayRep*S.rep,sold:false});
+ S.market={day:localDay(now),stock};}
+function advance(S,now){const ev=[];
+ if(now<S.tick){shiftTimes(S,now-S.tick);return ev;}
+ S.light=Math.min(S.light,lightCeiling(S));syncFuse(S,S.tick);
+ const end=Math.min(now,S.tick+S.cap*H);let t=S.tick;
+ while(t+MIN<=end){t+=MIN;sweep(S,t,ev);accrue(S,t,ev);S.tick=t;}
+ sweep(S,now,ev);
+ if(now>end)S.tick=now;
+ if(!S.market||S.market.day!==localDay(now))restock(S,now);
+ return ev;}
+
+// --- actions (return null on success, or a reason string) ---
+function tap(S){if(S.light>=lightCeiling(S))return false;S.light++;return true;}
+function sit(S,now){const B=S.basement;if(basementLeft(S)===0)return 'The basement is empty';if(B.sitAt!=null)return 'Already sitting';
+ const c=sitCost(S);if(S.light<c)return `Need ${c} light (have ${Math.floor(S.light)})`;S.light-=c;B.sitAt=now;B.fuseAt=null;B.fuseMs=0;return null;}
+function canSend(S,sid,dest){const s=S.spirits[sid];if(!s||!s.body)return 'No body';if(s.wild>0)return 'Wild';if(s.loc.k!=='home')return 'Not home';
+ if(outCount(S)>=S.slots)return 'Slots full';
+ if(dest.h){const Hs=HOUSES[dest.h-1];if(S.rep<Hs.rep)return `Opens at rep ${Hs.rep}`;if(occupant(S,dest.h))return 'Taken';if(fitMult(s.v[Hs.a],Hs.ask)===0)return `Needs ${Hs.a} ${Hs.ask}`;return null;}
+ const R=ROADS[dest.r],D=DEPTH[dest.d];if(!R||!D)return 'No such road';const under=askIdx(D.ask)-gi(s.v[R.a]);if(under>1)return 'Far too deep';return null;}
+function roadPreview(S,sid,r,d){const s=S.spirits[sid],R=ROADS[r],D=DEPTH[d];const reason=canSend(S,sid,{r,d});
+ return {ok:!reason,reason,breaks:!!s&&gi(s.v[R.a])<askIdx(D.ask),minutes:D.min,gold:Math.floor(D.gold*Math.min(10,1+S.rep/100)),body:D.body,wild:D.wild,grow:D.grow,ask:D.ask};}
+function send(S,now,sid,dest){const why=canSend(S,sid,dest);if(why)return why;const s=S.spirits[sid];
+ if(dest.h){s.loc={k:'house',h:dest.h,at:now,min:0,earned:0};log(S,now,`${s.name} went to ${HOUSES[dest.h-1].n}.`);return null;}
+ const R=ROADS[dest.r],D=DEPTH[dest.d];const loot={gold:Math.floor(D.gold*Math.min(10,1+S.rep/100)),body:rand(S)<D.body?pickSp(S,dest.d<2?1:2):null,wild:rand(S)<D.wild?pickSp(S,dest.d<3?1:2):null,breaks:gi(s.v[R.a])<askIdx(D.ask),sp:spOf(S,s)};
+ s.loc={k:'road',r:dest.r,d:dest.d,at:now,done:now+D.min*MIN,loot};log(S,now,`${s.name} set out for ${R.n}, depth ${dest.d+1}.`);return null;}
+function recall(S,now,sid){const s=S.spirits[sid];if(!s||s.loc.k!=='house')return 'Not at a house';log(S,now,`${s.name} came home from ${HOUSES[s.loc.h-1].n}.`);s.loc={k:'home'};return null;}
+function buySlot(S){const p=slotPrice(S);if(p==null)return 'No more slots';if(S.gold<p)return `Need ${p} g`;S.gold-=p;S.slots++;return null;}
+function buyCap(S){const u=capUp(S);if(!u)return 'At the limit';if(S.gold<u[1])return `Need ${u[1]} g`;S.gold-=u[1];S.cap=u[0];return null;}
+function feedGain(s,a){return Math.floor(CFG.foodGain/Math.pow(2,Math.max(0,gi(s.v[a])-2)));}
+function feed(S,sid,a){const s=S.spirits[sid];if(!s||!s.body)return 'No body';if(s.loc.k!=='home')return 'Not home';const c=caps(spOf(S,s));const g=Math.min(feedGain(s,a),c[a]-s.v[a]);if(g<=0)return 'At the cap';s.v[a]+=g;return null;}
+function buyStock(S,now,i,sid){const it=S.market.stock[i];if(!it)return 'Nothing there';if(it.sold)return 'Sold';if(S.gold<it.price)return `Need ${it.price} g`;
+ if(it.kind==='body'){newBody(S,it.sp);}
+ else if(it.kind==='food'){const why=feed(S,sid,it.a);if(why)return why;}
+ else{const s=newSpirit(S,it.sp,false,now);s.v[SP[it.sp].a]=rint(S,10,19);log(S,now,`Bought a stray: ${s.name}, a ${SP[it.sp].y}.`);}
+ S.gold-=it.price;it.sold=true;return null;}
+function rehouse(S,sid,bid){const s=S.spirits[sid],b=S.bodies[bid];if(!s||!b)return 'No';if(s.loc.k!=='home')return 'Not home';if(all(S).some(x=>x.body===bid))return 'Body in use';
+ const c=caps(b.sp);AFF.forEach(a=>s.v[a]=Math.min(s.v[a],c[a]));s.body=bid;s.yokai=SP[b.sp].y;return null;}
+function sellBody(S,bid){const b=S.bodies[bid];if(!b)return 'No';if(all(S).some(x=>x.body===bid))return 'Body in use';S.gold+=SELL[SP[b.sp].t];delete S.bodies[bid];return null;}
+function dismiss(S,id){S.notices=S.notices.filter(n=>n.id!==id);}
+function newGame(seed,now){const S={v:1,savedAt:now,tick:now,rng:seed|0,n:1,gold:0,light:10,rep:0,slots:2,cap:4,
+ basement:{order:['candle','kokeshi','ladle'],next:0,fuseAt:now,fuseMs:0,sitAt:null},spirits:{},bodies:{},market:null,log:[],notices:[],seen:{},say:null};
+ while(S.basement.order.length<CFG.basement)S.basement.order.push(pickSp(S));
+ restock(S,now);log(S,now,'You inherit the shop. Ninety-nine items in the basement.');return S;}
+function exportState(S){return JSON.stringify(S);}
+function importState(txt){const o=JSON.parse(txt);if(!o||o.v!==1||!o.basement||!o.spirits)throw new Error('Not a Ninety-Nine save');return o;}
+if(typeof module!=='undefined')module.exports={MIN,H,AFF,GR,SP,HOUSES,ROADS,DEPTH,SLOTS,CAPUP,SELL,CFG,gi,gradeOf,bands,caps,fitMult,fit,rand,newGame,advance,tap,sit,sitCost,lightCeiling,lightRate,tameRate,wildAtHome,outCount,atHome,shelf,box,occupant,canSend,roadPreview,send,recall,buySlot,buyCap,buyStock,feed,feedGain,rehouse,sellBody,dismiss,exportState,importState,shiftTimes,spOf,rentalRate,slotPrice,capUp,nextHouse,basementLeft,fuseDue,sitDue,newBody,newSpirit,log,localDay};
+</script>
+<script>
+// ===== UI =====
+const $=s=>document.querySelector(s);
+const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const COL={Ember:'var(--ember)',Frost:'var(--frost)',Bloom:'var(--bloom)',Clay:'var(--clay)',Tide:'var(--tide)'};
+const AB={Ember:'Em',Frost:'Fr',Bloom:'Bl',Clay:'Cl',Tide:'Ti'};
+const OWNER=Math.random().toString(36).slice(2);
+let S=null;const UI={open:{},road:{},food:{},house:{},modal:null,foreign:false,goldBefore:0,repBefore:0};
+const now=()=>Date.now();
+const dur=ms=>{ms=Math.max(0,ms);const m=Math.floor(ms/60e3),h=Math.floor(m/60);if(h>=1)return h+'h '+(m%60)+'m';if(m>=1)return m+' min';return Math.ceil(ms/1000)+' s';};
+const clock=ms=>{ms=Math.max(0,ms);const s=Math.ceil(ms/1000);return Math.floor(s/60)+':'+String(s%60).padStart(2,'0');};
+const ago=t=>{const d=now()-t;return d<60e3?'just now':dur(d)+' ago';};
+const g=x=>Math.floor(x);
+const money=x=>(Math.round(x*10)/10).toString().replace(/\.0$/,'');
+
+// --- portraits ---
+function face(cx,cy,w,wild,tame){if(!tame&&!wild)return '';const e=`<circle cx="${cx-w/2}" cy="${cy}" r="1.8" fill="#1c1915"/><circle cx="${cx+w/2}" cy="${cy}" r="1.8" fill="#1c1915"/>`;
+ const m=wild?`<path d="M${cx-w/2} ${cy+7} l${w/4} -3 l${w/4} 3 l${w/4} -3 l${w/4} 3" fill="none" stroke="#1c1915" stroke-width="1.4"/><path d="M${cx-w/2-4} ${cy-5} l6 2 M${cx+w/2+4} ${cy-5} l-6 2" stroke="#1c1915" stroke-width="1.4"/>`:`<path d="M${cx-w/3} ${cy+6} q${w/3} 4 ${w*2/3} 0" fill="none" stroke="#1c1915" stroke-width="1.4"/>`;return e+m;}
+function portrait(sp,opt={}){const P=SP[sp],a=P.a,col=opt.live?COL[a]:'#8a8177',fill=opt.live?col:'none',fo=opt.live?.18:0,t2=P.t===2,wild=!!opt.wild,live=!!opt.live;const sz=opt.size||56;
+ let body='';const st=`stroke="${col}" stroke-width="2" fill="${fill}" fill-opacity="${fo}"`;
+ if(P.art==='candle')body=`<rect x="20" y="22" width="16" height="28" rx="2" ${st}/><path d="M28 20 q-6 -8 0 -14 q6 6 0 14z" fill="${live?col:'none'}" stroke="${col}" stroke-width="1.5"/>${t2?`<rect x="14" y="18" width="28" height="4" ${st}/>`:''}${face(28,34,8,wild,live)}`;
+ else if(P.art==='chime')body=`<path d="M18 30 q10 -22 20 0 z" ${st}/><rect x="17" y="30" width="22" height="4" ${st}/><line x1="28" y1="34" x2="28" y2="52" stroke="${col}" stroke-width="2"/><rect x="24" y="44" width="8" height="10" ${st}/>${t2?`<path d="M14 32 q14 -28 28 0" fill="none" stroke="${col}" stroke-width="1.5"/>`:''}${face(28,21,7,wild,live)}`;
+ else if(P.art==='whisk')body=`<rect x="25" y="8" width="6" height="16" rx="1" ${st}/>${[-10,-6,-2,2,6,10].map(d=>`<line x1="28" y1="24" x2="${28+d*1.6}" y2="50" stroke="${col}" stroke-width="1.6"/>`).join('')}${t2?`<rect x="18" y="22" width="20" height="5" ${st}/>`:''}${face(28,36,8,wild,live)}`;
+ else if(P.art==='teapot')body=`<ellipse cx="28" cy="34" rx="15" ry="12" ${st}/><path d="M43 30 q8 -2 8 6 q0 6 -7 6" fill="none" stroke="${col}" stroke-width="2"/><path d="M13 30 q-6 2 -4 10" fill="none" stroke="${col}" stroke-width="2"/><rect x="22" y="18" width="12" height="5" rx="2" ${st}/>${t2?`<ellipse cx="28" cy="46" rx="16" ry="3" ${st}/>`:''}${face(28,33,9,wild,live)}`;
+ else if(P.art==='ladle')body=`<path d="M12 30 h24 v6 q0 8 -12 8 q-12 0 -12 -8z" ${st}/><line x1="36" y1="31" x2="50" y2="12" stroke="${col}" stroke-width="3"/>${t2?`<rect x="10" y="26" width="28" height="4" ${st}/>`:''}${face(24,36,8,wild,live)}`;
+ else body=`<circle cx="28" cy="18" r="10" ${st}/><rect x="20" y="28" width="16" height="24" rx="4" ${st}/><path d="M18 16 q10 -10 20 0" fill="none" stroke="${col}" stroke-width="2"/>${t2?`<path d="M22 36 h12 M22 42 h12" stroke="${col}" stroke-width="1.5"/>`:''}${face(28,19,7,wild,live)}`;
+ return `<svg class="pt${live?' live':''}${wild?' wild':''}" viewBox="0 0 56 56" width="${sz}" height="${sz}" style="--c:${col}" aria-hidden="true">${body}</svg>`;}
+const hozukiSVG=`<svg viewBox="0 0 56 56" width="64" height="64" class="pt live" style="--c:var(--ember)" aria-hidden="true"><ellipse cx="28" cy="30" rx="17" ry="20" fill="var(--ember)" fill-opacity=".2" stroke="var(--ember)" stroke-width="2"/><path d="M11 24 h34 M11 36 h34" stroke="var(--ember)" stroke-width="1.2"/><rect x="22" y="6" width="12" height="5" fill="var(--ember)"/><rect x="22" y="49" width="12" height="4" fill="var(--ember)"/><circle cx="23" cy="29" r="2" fill="#1c1915"/><circle cx="33" cy="29" r="2" fill="#1c1915"/><path d="M24 36 q4 3 8 0" fill="none" stroke="#1c1915" stroke-width="1.5"/></svg>`;
+
+// --- Hōzuki ---
+function say(key,text){if(S.seen[key])return;S.seen[key]=1;S.say={key,text};}
+function sayDefault(){const home=atHome(S),tame=home.filter(s=>s.wild===0),wild=home.filter(s=>s.wild>0);
+ if(wild.length&&!tame.some(s=>!isLight(S,s)))return 'Someone has to stay home for that one. Wild ones only settle with company.';
+ if(tame.length&&outCount(S)<S.slots)return `${tame[0].name} is waiting, and there's a slot free.`;
+ if(basementLeft(S)>0&&S.basement.sitAt==null&&S.light>=sitCost(S))return "There's light enough. Shall I sit with the next one?";
+ if(basementLeft(S)===0)return "Ninety-nine years is a long time to be in the dark. They're all up now.";
+ return 'The street is quiet. Good.';}
+function hozukiCheck(ev){const sp=Object.values(S.spirits);
+ if(S.basement.sitAt!=null)say('sit',S.basement.next===0?'Forty-five seconds. Tap me while you wait: every tap is light, and the next one costs more.':'Two minutes. Tap me if you like; light is light.');
+ if(sp.length&&!UI.modal&&S.basement.sitAt==null)say('first',`${sp[0].name}. Ember, grade D: warm, barely. Kōda's oven wants exactly that. Send ${sp[0].name}; she earns by the minute and learns while she works.`);
+ if(outCount(S)>=S.slots&&atHome(S).length===0&&sp.length>=2)say('full',"Both slots full, nobody home. If the next one wakes before someone sits with it, it wakes wild, and wild ones can't work.");
+ const waiting=atHome(S).find(s=>s.wild===0);if(waiting&&outCount(S)>=S.slots&&slotPrice(S))say('slots',`${waiting.name} waits. Another slot is ${slotPrice(S)} gold; the street earns that soon enough. Go on, I'll keep the lamp.`);
+ if(S.seen.card)say('return',"They finished cycles while you were gone. That's reputation, and reputation opens doors.");
+ for(const e of ev){const s=S.spirits[e.sid];
+  if(e.k==='wild')say('wild',`${s.name} woke wild; see it shake. It can't work until someone tame sits with it at home. ${atHome(S).some(x=>x.wild===0&&!isLight(S,x))?'':'Recall one; a kokeshi is quickest.'}`);
+  if(e.k==='band')say('band',`${s.name}'s learned something: ${e.a} ${gradeOf(s.v[e.a])} now. Over-qualified earns a tip.`);
+  if(e.k==='break')say('break',`${s.name}'s home without a body. Keep the loot; find a new one on the shelf or at the market.`);
+  if(e.k==='empty')say('empty',"That's all of them. Ninety-nine years is a long time to be in the dark.");}
+ if(S.market.stock.some(x=>x.kind==='stray')&&S.rep>=10)say('stray',"Someone at the market is selling a tame one. Dearer every day you're known.");}
+
+// --- pieces ---
+function pips(s,sp){const c=caps(sp);return `<div class="pips">${AFF.map(a=>{const v=s.v[a],on=v>0,nat=SP[sp].a===a;return `<span class="pip${on?' on':''}${nat?' nat':''}" style="--c:${COL[a]}" title="${a} ${v} of ${c[a]}">${AB[a]} ${on?gradeOf(v)+v:'–'}</span>`;}).join('')}</div>`;}
+function roleOf(s){if(s.wild>0){const r=atHome(S).filter(x=>x.wild===0&&!isLight(S,x)).reduce((t,x)=>t+tameRate(S,x),0);const wildest=atHome(S).filter(x=>x.wild>0).sort((a,b)=>b.wild-a.wild||(a.id<b.id?-1:1))[0];
+  return r>0?(wildest===s?`WILD · settling, ${Math.ceil(s.wild/r)} min`:'WILD · waiting its turn'):'WILD · nobody home to settle it';}
+ if(isLight(S,s))return `Making light · +${bands(s.v.Ember)*SP[spOf(S,s)].light}/min`;const w=atHome(S).find(x=>x.wild>0);return w?`Taming ${w.name}`:'Waiting';}
+function chip(s){const sp=spOf(S,s),open=UI.open[s.id];const wild=s.wild>0;const c=caps(sp);
+ const houses=HOUSES.filter(h=>S.rep>=h.rep&&!occupant(S,h.h));
+ return `<div class="chip${wild?' wild':''}" id="c-${s.id}"><div class="row sb"><div class="row" style="gap:8px"><div>${portrait(sp,{live:true,wild})}</div><div><b>${esc(s.name)}</b> <span class="muted">${SP[sp].y}</span><div class="muted small">${SP[sp].n}${SP[sp].t===2?' · tier 2':''} · ${wild?'<span class="wildtag">WILD</span> ':''}${esc(roleOf(s))}</div></div></div>
+ <button data-act="open" data-id="${s.id}" aria-expanded="${!!open}">${open?'Less':'More'}</button></div>${pips(s,sp)}
+ ${open?`<div class="more"><div class="muted small">Caps in this body: ${AFF.map(a=>AB[a]+' '+gradeOf(c[a])).join(' · ')}${AFF.some(a=>s.v[a]>=c[a]&&s.v[a]>0)?` · at the ${SP[sp].n.toLowerCase()}'s limit`:''}</div>
+  ${wild?'':`<div class="row" style="margin-top:6px">${houses.length?houses.map(h=>{const why=canSend(S,s.id,{h:h.h});const f=fitMult(s.v[h.a],h.ask);return `<button class="pri" data-act="send" data-id="${s.id}" data-h="${h.h}" ${why?'disabled title="'+esc(why)+'"':''}>${esc(h.n)} · ${why?esc(why):(f>1?'×'+f+' · ':'')+money(h.rate*f)+' g/min'}</button>`;}).join(''):'<span class="muted">No house open for it yet.</span>'}</div>`}
+  <div class="row" style="margin-top:6px">${S.market.stock.map((it,i)=>it.kind==='food'&&!it.sold?`<button data-act="food" data-i="${i}" data-id="${s.id}" ${s.loc.k!=='home'||S.gold<it.price?'disabled':''}>Feed ${it.a} · ${it.price} g · +${Math.min(feedGain(s,it.a),c[it.a]-s.v[it.a])} → ${gradeOf(Math.min(c[it.a],s.v[it.a]+feedGain(s,it.a)))}${Math.min(c[it.a],s.v[it.a]+feedGain(s,it.a))}</button>`:'').join('')}
+  ${shelf(S).map(b=>`<button data-act="rehouse" data-id="${s.id}" data-b="${b}">Move into the ${SP[S.bodies[b].sp].n.toLowerCase()} · ${AFF.filter(a=>s.v[a]>0).map(a=>AB[a]+' → '+gradeOf(Math.min(caps(S.bodies[b].sp)[a],s.v[a]))).join(' ')}</button>`).join('')}</div></div>`:''}</div>`;}
+function boxChip(s){return `<div class="chip ghost" id="c-${s.id}"><div class="row sb"><div><b>${esc(s.name)}</b> <span class="muted">unhoused · ${esc(s.yokai)}</span>${pips(s,'kokeshi').replace('nat','')}</div></div>
+ <div class="row" style="margin-top:6px">${shelf(S).length?shelf(S).map(b=>`<button class="pri" data-act="rehouse" data-id="${s.id}" data-b="${b}">House in the ${SP[S.bodies[b].sp].n.toLowerCase()} · ${AFF.filter(a=>s.v[a]>0).map(a=>AB[a]+' → '+gradeOf(Math.min(caps(S.bodies[b].sp)[a],s.v[a]))).join(' ')||'E'}</button>`).join(''):'<span class="muted">No empty body on the shelf. Roads and the market have them.</span>'}</div></div>`;}
+
+function mast(){const t=now();const frac=Math.min(1,Math.max(0,(t-S.tick)/MIN));const gold=g(S.gold+rentalRate(S)*frac);const nh=nextHouse(S);const sp=slotPrice(S);
+ return `<header class="mast"><div class="row sb" style="align-items:flex-end"><h1>Ninety-Nine</h1><span class="sub">tsukumogami for hire</span></div>
+ <div class="strip"><span>Gold <b>${gold}</b>${rentalRate(S)?`<small> +${money(rentalRate(S))}/min</small>`:''}</span>
+ <button class="lantern" data-act="tap" aria-label="Tap the lantern for light">☼ Light <b>${g(S.light)}</b>/${lightCeiling(S)}</button>
+ <span>Rep <b>${S.rep}</b>${nh?`<small> · ${esc(nh.n.split(',')[0])} at ${nh.rep}</small>`:''}</span>
+ <span>Out <b>${outCount(S)}</b>/${S.slots} ${sp?`<button data-act="slot" ${S.gold<sp?'disabled':''}>+1 · ${sp} g</button>`:''}</span>
+ <span>Basement <b>${basementLeft(S)}</b></span></div></header>`;}
+
+function shop(){const B=S.basement,t=now();const left=basementLeft(S);const nextSp=left?SP[B.order[B.next]]:null;const sd=sitDue(S),fd=fuseDue(S);const cost=sitCost(S);
+ const fuseText=B.sitAt!=null?`sitting… ${clock(sd-t)}`:fd!=null?`wakes wild in ${dur(fd-t)}`:wildAtHome(S)>=2?'waiting: two wild ones at home already':'';
+ const basement=left?`<div class="box dbl"><div class="kick">The basement · next up</div><div class="row sb"><div class="row" style="gap:8px">${portrait(B.order[B.next],{})}<div><div class="hl">${nextSp.n}</div><div class="muted small">${nextSp.r}${nextSp.t===2?' · tier 2':''} · ${nextSp.a} · ${esc(fuseText)}</div></div></div>
+  ${B.sitAt!=null?`<div class="bar"><i style="width:${Math.min(100,100-(sd-t)/(B.next===0?CFG.sitFirst:CFG.sit)*100)}%"></i></div>`:`<button class="pri big" data-act="sit" ${S.light<cost?'disabled':''}>Sit with it · ${cost} light · ${B.next===0?'45 s':'2 min'}</button>`}</div>
+  ${S.light<cost&&B.sitAt==null?`<div class="muted small">Need ${cost} light, have ${g(S.light)}. Light fills ${lightRate(S)}/min; tapping the lantern adds one.</div>`:''}</div>
+  <div class="row sb small muted" style="margin-top:6px"><span>Away from the shop, the street pays for ${S.cap} h.</span>${capUp(S)?`<button data-act="cap" ${S.gold<capUp(S)[1]?'disabled':''}>Pay ${capUp(S)[0]} h · ${capUp(S)[1]} g</button>`:''}</div>`:`<div class="box"><div class="kick">The basement</div><div class="hl">Empty.</div><div class="muted small">Ninety-nine, all up. Roads and the market keep the shop supplied.</div></div>`;
+ const home=atHome(S);const bx=box(S);
+ return `<section><div class="box hoz"><div class="row" style="gap:10px;align-items:flex-start">${hozukiSVG}<div><div class="kick">Hōzuki, the shop lantern</div><p>${esc(S.say?S.say.text:sayDefault())}</p>${S.say&&S.say.key!=='open'?`<div class="muted small">${esc(sayDefault())}</div>`:''}</div></div></div>
+ ${basement}
+ <div class="kick" style="margin-top:12px">At home · ${home.length}</div>${home.length?`<div class="chips">${home.sort((a,b)=>(b.wild>0)-(a.wild>0)).map(chip).join('')}</div>`:'<div class="muted">Nobody home.</div>'}
+ ${bx.length?`<div class="kick" style="margin-top:12px">The box · unhoused spirits · ${bx.length}</div><div class="chips">${bx.map(boxChip).join('')}</div>`:''}
+ ${shelf(S).length?`<div class="kick" style="margin-top:12px">The shelf · empty bodies</div><div class="row">${shelf(S).map(b=>`<span class="chip tiny">${portrait(S.bodies[b].sp,{size:36})}<span>${SP[S.bodies[b].sp].n}${SP[S.bodies[b].sp].t===2?' · tier 2':''}</span><button data-act="sell" data-b="${b}">Sell · ${SELL[SP[S.bodies[b].sp].t]} g</button></span>`).join('')}</div>`:''}</section>`;}
+
+function house(h){const occ=occupant(S,h.h);const t=now();
+ if(occ){const f=fitMult(occ.v[h.a],h.ask);const sp=spOf(S,occ);const cyc=CFG.cycle-(occ.loc.min%CFG.cycle);
+  return `<div class="box house lit" style="--c:${COL[h.a]}"><div class="kick">${esc(h.n)} · ${h.a} ${h.ask}</div><div class="row sb"><div class="row" style="gap:8px">${portrait(sp,{live:true})}<div><b>${esc(occ.name)}</b> <span class="muted small">${h.a} ${gradeOf(occ.v[h.a])}${f>1?' · ×'+f+(f===1.5?' a tip':''):''}</span><div class="small">earning ${money(h.rate*f)} g/min · ${g(occ.loc.earned||0)} g so far · cycle ends in ${cyc} min · +${h.tier*(f>=2?2:1)} rep</div></div></div><button data-act="recall" data-id="${occ.id}">Recall</button></div></div>`;}
+ const el=atHome(S).filter(s=>s.wild===0&&!canSend(S,s.id,{h:h.h}));const why=outCount(S)>=S.slots?'Slots full':atHome(S).some(s=>s.wild===0)?`Nobody home with ${h.a} ${h.ask}`:'Nobody home';
+ return `<div class="box house"><div class="kick">${esc(h.n)} · tier ${h.tier}</div><div class="hl">${esc(h.p)}</div><div class="row sb"><span class="bd aff" style="border-left-color:${COL[h.a]}">${h.a} ${h.ask}</span><span class="price">${money(h.rate)}<small> g/min</small></span></div>
+ <div class="row" style="margin-top:6px">${el.length?el.map(s=>{const f=fitMult(s.v[h.a],h.ask);return `<button class="pri" data-act="send" data-id="${s.id}" data-h="${h.h}">Send ${esc(s.name)} · ${f>1?'×'+f+(f===1.5?' a tip':'')+' · ':'Fits · '}${money(h.rate*f)} g/min</button>`;}).join(''):`<span class="muted">${why}</span>`}</div></div>`;}
+function street(){const open=HOUSES.filter(h=>S.rep>=h.rep),locked=HOUSES.filter(h=>S.rep<h.rep);
+ return `<section><h2 class="sec">The street</h2><div class="muted small" style="margin-bottom:8px">Rentals pay by the minute and renew until recalled. A tenant learns the house's affinity, +1 an hour, up to what its body allows.</div>
+ ${open.map(house).join('')}${locked.length?`<div class="box ghost"><span class="muted">${locked.length} more house${locked.length>1?'s':''} · next: ${esc(locked[0].n)} at rep ${locked[0].rep}</span></div>`:''}</section>`;}
+
+function road(r){const R=ROADS[r];const st=UI.road[r]||(UI.road[r]={d:0,sid:''});const t=now();const out=all(S).filter(s=>s.loc.k==='road'&&s.loc.r===r);
+ const el=atHome(S).filter(s=>s.wild===0);const chosen=S.spirits[st.sid]&&el.includes(S.spirits[st.sid])?S.spirits[st.sid]:el[0];if(chosen)st.sid=chosen.id;
+ const rows=DEPTH.map((D,i)=>{const p=chosen?roadPreview(S,chosen.id,r,i):null;const mult=Math.min(10,1+S.rep/100);return `<button class="depth${st.d===i?' on':''}${p&&!p.ok?' off':''}" data-act="depth" data-r="${r}" data-d="${i}" ${el.length?'':'disabled'}>D${i+1} · ${D.min>=60?D.min/60+' h':D.min+' min'} · ask ${D.ask} · ${Math.floor(D.gold*mult)} g · body ${D.body*100}% · wild ${D.wild*100}% · +${D.grow} ${R.a}</button>`;}).join('');
+ const p=chosen?roadPreview(S,chosen.id,r,st.d):null;
+ return `<div class="box"><div class="kick">${esc(R.n)} · ${R.a}</div><div class="depths">${rows}</div>
+ ${out.map(s=>`<div class="small">${esc(s.name)} is out · back in ${dur(s.loc.done-t)}${s.loc.loot.breaks?' · the body will break':''}</div>`).join('')}
+ <div class="row" style="margin-top:6px">${el.length?`<select data-f="roadsid" data-r="${r}">${el.map(s=>`<option value="${s.id}" ${s===chosen?'selected':''}>${esc(s.name)} · ${R.a} ${gradeOf(s.v[R.a])}${s.v[R.a]?s.v[R.a]:''}</option>`).join('')}</select>
+  <button class="${p&&p.breaks?'red':'pri'}" data-act="road" data-r="${r}" data-id="${chosen.id}" ${p&&!p.ok?'disabled':''}>${p&&!p.ok?esc(p.reason):p.breaks?'Send anyway':'Send'}</button>`:'<span class="muted">Nobody home to send.</span>'}</div>
+ ${p&&p.ok&&p.breaks?`<div class="warn">Too deep for a ${gradeOf(chosen.v[R.a])}. The ${SP[spOf(S,chosen)].n.toLowerCase()} will break; ${esc(chosen.name)} comes home unhoused and you keep the loot.</div>`:''}</div>`;}
+function roads(){return `<section><h2 class="sec">The roads</h2><div class="muted small" style="margin-bottom:8px">Pick a depth, send, wait. Deeper pays more and brings back bodies and wild ones; one grade under the ask breaks the body.</div>${Object.keys(ROADS).map(road).join('')}</section>`;}
+
+function market(){const st=S.market.stock;const home=atHome(S).filter(s=>s.loc.k==='home');
+ return `<section><h2 class="sec">The market</h2><div class="muted small" style="margin-bottom:8px">New stock at midnight.${S.rep<200?' Tier-2 bodies appear at rep 200.':''}</div><div class="box">${st.map((it,i)=>{
+  if(it.kind==='body')return `<div class="row sb line">${portrait(it.sp,{size:36})}<span><b>${SP[it.sp].n}</b> body${SP[it.sp].t===2?' · tier 2':''} <span class="muted small">caps ${AFF.map(a=>AB[a]+' '+gradeOf(caps(it.sp)[a])).join(' ')}</span></span>${it.sold?'<span class="muted">sold</span>':`<button data-act="buy" data-i="${i}" ${S.gold<it.price?'disabled':''}>${it.price} g</button>`}</div>`;
+  if(it.kind==='stray')return `<div class="row sb line">${portrait(it.sp,{live:true,size:36})}<span><b>A stray ${SP[it.sp].n.toLowerCase()}</b> <span class="muted small">tame, ${SP[it.sp].a} D, comes with its body</span></span>${it.sold?'<span class="muted">sold</span>':`<button class="pri" data-act="buy" data-i="${i}" ${S.gold<it.price?'disabled':''}>${it.price} g</button>`}</div>`;
+  const sel=UI.food[i]&&home.find(s=>s.id===UI.food[i])?UI.food[i]:(home[0]&&home[0].id);const s=S.spirits[sel];
+  return `<div class="row sb line"><span><b>Food · ${it.a}</b> <span class="muted small">+6 ${it.a}, less above C</span></span>${it.sold?'<span class="muted">sold</span>':home.length?`<span class="row"><select data-f="food" data-i="${i}">${home.map(x=>`<option value="${x.id}" ${x.id===sel?'selected':''}>${esc(x.name)} · ${AB[it.a]} ${gradeOf(x.v[it.a])}${x.v[it.a]}</option>`).join('')}</select><button data-act="food" data-i="${i}" data-id="${sel}" ${S.gold<it.price?'disabled':''}>${it.price} g → ${gradeOf(Math.min(caps(spOf(S,s))[it.a],s.v[it.a]+feedGain(s,it.a)))}</button></span>`:'<span class="muted">nobody home to feed</span>'}</div>`;}).join('')}</div></section>`;}
+
+function ledger(){return `<section><h2 class="sec">Ledger</h2><div class="box"><div class="log">${S.log.slice(0,40).map(l=>`<div><span class="muted small">${ago(l.t)}</span> ${esc(l.text)}</div>`).join('')}</div></div>
+ <details class="box" style="margin-top:8px" ${UI.dbg?'open':''} data-dbg><summary class="kick">Save, debug</summary><div class="row" style="margin:8px 0"><button data-act="export">Copy save</button><button data-act="import">Load save</button><button class="red" data-act="new">New game</button><button data-act="skip" data-h="1">Debug: skip 1 h</button><button data-act="skip" data-h="8">Skip 8 h</button></div><textarea id="pk" rows="3" placeholder="paste a save here, then Load"></textarea></details></section>`;}
+
+function bar(){const items=[];const t=now();
+ for(const n of S.notices)items.push(`<button data-act="dismiss" data-id="${n.id}" data-go="c-${n.sid}">${esc(n.text.split(':')[0])} · Collect</button>`);
+ const w=atHome(S).filter(s=>s.wild>0);if(w.length&&!atHome(S).some(s=>s.wild===0&&!isLight(S,s)))items.push(`<button data-act="go" data-go="c-${w[0].id}">${w.length} wild · nobody home to settle</button>`);
+ if(basementLeft(S)&&S.basement.sitAt==null&&S.light>=sitCost(S))items.push(`<button data-act="sit">Light enough · Sit</button>`);
+ const wt=atHome(S).find(s=>s.wild===0);if(wt&&outCount(S)<S.slots)items.push(`<button data-act="go" data-go="street">${esc(wt.name)} waiting · slot free</button>`);
+ return items.length?`<div class="bar-b">${items.join('')}</div>`:'';}
+
+function render(){if(UI.foreign){$('#app').innerHTML='<div class="box" style="margin-top:40px"><div class="hl">Open in another tab</div>Ninety-Nine is running in another tab. Close this one.</div>';return;}
+ const ae=document.activeElement;if(ae&&/SELECT|INPUT|TEXTAREA/.test(ae.tagName)&&!UI.modal)return;
+ $('#app').innerHTML=mast()+shop()+`<div id="street"></div>`+street()+roads()+market()+ledger()+bar();
+ $('#modal').innerHTML=UI.modal?`<div class="ov"><div class="card">${UI.modal}</div></div>`:'';}
+
+// --- modals ---
+function reveal(s){const sp=spOf(S,s);UI.modal=`<div class="kick">It woke</div><div class="rv">${portrait(sp,{live:true,wild:s.wild>0,size:120})}<div class="hl big">${esc(s.name)}</div><div>${esc(s.yokai)} · the ${SP[sp].n.toLowerCase()}${s.wild>0?' · <span class="wildtag">WILD</span>':''}</div><div class="muted">${SP[sp].a} ${gradeOf(s.v[SP[sp].a])}${s.wild>0?' · woke in the dark; needs taming before it can work':' · ready to work'}</div></div><div class="row" style="justify-content:flex-end;margin-top:10px"><button class="pri" data-act="close" data-k="reveal">Close</button></div>`;}
+function awayCard(ev,gap){const wild=ev.filter(e=>e.k==='wild'),brk=ev.filter(e=>e.k==='break'),ret=ev.filter(e=>e.k==='return'),wk=ev.filter(e=>e.k==='wake'),tm=ev.filter(e=>e.k==='tamed'),cyc=ev.filter(e=>e.k==='cycle');
+ const gold=g(S.gold-UI.goldBefore),rep=S.rep-UI.repBefore;const opened=HOUSES.filter(h=>h.rep>UI.repBefore&&h.rep<=S.rep);const capped=gap>S.cap*H;
+ const li=[];const nm=e=>esc((S.spirits[e.sid]||{}).name||'?');
+ wild.forEach(e=>li.push(`<li class="hot">${nm(e)} woke <b>wild</b>${e.from==='road'?' on the road and came home':' in the basement'}. It needs someone tame at home.</li>`));
+ brk.forEach(e=>li.push(`<li class="hot">${nm(e)} came home without a body. Keep the loot; find it a body.</li>`));
+ ret.forEach(e=>li.push(`<li>${nm(e)} is back: ${e.gold} g${e.got.length?', '+e.got.join(', '):''}.</li>`));
+ wk.forEach(e=>li.push(`<li>${nm(e)} woke tame.</li>`));tm.forEach(e=>li.push(`<li>${nm(e)} is tame now.</li>`));
+ if(cyc.length||gold)li.push(`<li>${gold} g earned on the street · ${cyc.length} cycles · +${rep} rep${opened.length?' · opened: '+opened.map(h=>esc(h.n)).join(', '):''}.</li>`);
+ if(S.light>=lightCeiling(S))li.push('<li>The lantern is full.</li>');
+ const fd=fuseDue(S);if(fd)li.push(`<li>Next item wakes wild in ${dur(fd-now())}.</li>`);
+ li.push(`<li class="muted">Gone ${dur(gap)}${capped?`; the street pays for ${S.cap}. (Away pays longer: see the masthead.)`:'.'}</li>`);
+ UI.modal=`<div class="kick">While you were out</div><ul class="away">${li.join('')}</ul><div class="row" style="justify-content:flex-end"><button class="pri" data-act="close" data-k="card">Open the shop</button></div>`;S.seen.card=1;}
+
+// --- loop ---
+let timer=null;function save(){S.savedAt=now();S.owner=OWNER;try{localStorage.setItem('nn-save',exportState(S));}catch(e){}}
+function onEvents(ev){for(const e of ev)if(e.k==='wake'&&!UI.modal&&document.visibilityState==='visible')reveal(S.spirits[e.sid]);hozukiCheck(ev);}
+function tick(){if(UI.foreign)return;const ev=advance(S,now());if(ev.length){onEvents(ev);save();}else if(now()-S.savedAt>10e3)save();render();}
+function act(f){const r=f();if(typeof r==='string'){flash(r);}S.light=Math.min(S.light,lightCeiling(S));hozukiCheck([]);save();render();}
+function flash(t){const d=document.createElement('div');d.className='flash';d.textContent=t;document.body.appendChild(d);setTimeout(()=>d.remove(),1800);}
+function start(){let loaded=null;try{const txt=localStorage.getItem('nn-save');if(txt)loaded=importState(txt);}catch(e){loaded=null;}
+ const t=now();if(loaded){S=loaded;UI.goldBefore=S.gold;UI.repBefore=S.rep;const gap=t-S.savedAt;const ev=advance(S,t);if(gap>CFG.card)awayCard(ev,gap);else onEvents(ev);}
+ else{S=newGame((t&0xffff)+1,t);say('open',"You're late. Ninety-nine downstairs, and the first wakes in three hours. Sit with it so it wakes tame; that costs light, and I've enough for one.");}
+ save();render();timer=setInterval(tick,1000);
+ document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')tick();});
+ window.addEventListener('storage',e=>{if(e.key!=='nn-save'||!e.newValue)return;try{if(JSON.parse(e.newValue).owner!==OWNER){UI.foreign=true;clearInterval(timer);render();}}catch(x){}});}
+
+document.addEventListener('click',e=>{const b=e.target.closest('[data-act]');if(!b||b.disabled)return;const a=b.dataset.act,id=b.dataset.id,t=now();
+ if(a==='tap'){if(!tap(S))flash('The lantern is full. Spend some.');render();return;}
+ if(a==='open'){UI.open[id]=!UI.open[id];render();return;}
+ if(a==='close'){const k=b.dataset.k;UI.modal=null;if(k==='reveal'&&!S.seen.reveal1){S.seen.reveal1=1;}hozukiCheck([]);save();render();return;}
+ if(a==='go'||a==='dismiss'){if(a==='dismiss')dismiss(S,id);save();render();const el=document.getElementById(b.dataset.go);if(el)el.scrollIntoView({behavior:'smooth',block:'center'});return;}
+ if(a==='depth'){(UI.road[b.dataset.r]||(UI.road[b.dataset.r]={})).d=+b.dataset.d;render();return;}
+ if(a==='sit')return act(()=>sit(S,t));
+ if(a==='send')return act(()=>send(S,t,id,{h:+b.dataset.h}));
+ if(a==='road')return act(()=>send(S,t,id,{r:b.dataset.r,d:UI.road[b.dataset.r].d}));
+ if(a==='recall'){const s=S.spirits[id];if(s.loc.min%CFG.cycle&&!confirm(`Recall ${s.name}? The half-finished cycle gives no rep.`))return;return act(()=>recall(S,t,id));}
+ if(a==='slot')return act(()=>buySlot(S));
+ if(a==='cap')return act(()=>buyCap(S));
+ if(a==='buy')return act(()=>buyStock(S,t,+b.dataset.i));
+ if(a==='food')return act(()=>buyStock(S,t,+b.dataset.i,id));
+ if(a==='rehouse')return act(()=>rehouse(S,id,b.dataset.b));
+ if(a==='sell')return act(()=>sellBody(S,b.dataset.b));
+ if(a==='export'){const txt=exportState(S);$('#pk').value=txt;navigator.clipboard&&navigator.clipboard.writeText(txt).catch(()=>{});flash('Save copied below.');return;}
+ if(a==='import'){try{const o=importState($('#pk').value);S=o;UI.goldBefore=S.gold;UI.repBefore=S.rep;const ev=advance(S,t);onEvents(ev);save();render();flash('Loaded.');}catch(x){flash('Not a Ninety-Nine save.');}return;}
+ if(a==='new'){if(!confirm('Start over? The basement refills and everyone is gone.'))return;S=newGame((t&0xffff)+1,t);say('open',"You're late. Ninety-nine downstairs, and the first wakes in three hours. Sit with it so it wakes tame; that costs light, and I've enough for one.");UI.open={};UI.modal=null;save();render();return;}
+ if(a==='skip'){shiftTimes(S,-b.dataset.h*H);UI.goldBefore=S.gold;UI.repBefore=S.rep;const ev=advance(S,t);awayCard(ev,b.dataset.h*H);hozukiCheck(ev);save();render();return;}});
+document.addEventListener('toggle',e=>{if(e.target.matches&&e.target.matches('[data-dbg]'))UI.dbg=e.target.open;},true);
+document.addEventListener('change',e=>{const s=e.target.closest('[data-f]');if(!s)return;if(s.dataset.f==='roadsid')(UI.road[s.dataset.r]||(UI.road[s.dataset.r]={d:0})).sid=s.value;if(s.dataset.f==='food')UI.food[s.dataset.i]=s.value;render();});
+start();
+</script>
+</body></html>
