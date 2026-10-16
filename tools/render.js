@@ -1,0 +1,28 @@
+// Headless click-through of the tutorial at phone width. Usage: node tools/render.js index.html shot.png (npm i playwright)
+const {chromium}=require('playwright');const fs=require('fs');
+(async()=>{const body=fs.readFileSync(process.argv[2],'utf8');
+const html=/^\s*<!doctype/i.test(body)?body:`<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><style>body{margin:0;font:14px system-ui}img{max-width:100%}[hidden]{display:none!important}</style></head><body>${body}</body></html>`;
+const b=await chromium.launch({executablePath:'/opt/pw-browsers/chromium-1194/chrome-linux/chrome'});
+const p=await b.newPage({viewport:{width:390,height:844}});const errs=[];
+p.on('console',m=>{if(m.type()==='error'&&!/ERR_FAILED/.test(m.text()))errs.push(m.text())});p.on('pageerror',e=>errs.push('PAGEERROR '+e.message));
+await p.route('**/*',r=>r.request().url().startsWith('data:')||r.request().resourceType()==='document'?r.continue():r.abort());
+await p.setContent(html,{waitUntil:'load'});await p.waitForTimeout(200);
+const tut=async()=>(await p.$eval('#tut',e=>e.textContent.replace(/\s+/g,' ').slice(22,34)));const go=()=>p.click('[data-act="tutgo"]');
+console.log('0',await tut());await p.click('[data-act="accept"]');
+console.log('1',await tut());await go();await p.click('[data-act="buymat"][data-id="charcoal"]');await p.click('[data-act="buymold"][data-id="teapot"]');
+console.log('2',await tut());await p.click('[data-act="tab"][data-id="front"]');await p.click('[data-act="design"]');await p.selectOption('select[data-f="mold"]','teapot');console.log('design-for badges (no spirit):',await p.$$eval('.box .badges .bd',b=>b.map(x=>x.className.includes('met')?'MET':x.className.includes('short')?'SHORT':'?').join(' ')));await p.selectOption('select[data-f="mat"]','charcoal');await p.selectOption('select[data-f="spirit"]',{index:1});
+console.log('receipt:',await p.$eval('.receipt',e=>e.textContent.replace(/\s+/g,' ')));console.log('design-for badges (spirit):',await p.$$eval('.box .badges .bd',b=>b.map(x=>x.className.includes('met')?'MET':x.className.includes('short')?'SHORT':'?').join(' ')));await p.click('[data-act="place"]');console.log('reveal:',await p.$eval('.rv .name',e=>e.textContent),'|',await p.$eval('.rv .ep',e=>e.textContent),'|',await p.$eval('.rv .say',e=>e.textContent));await p.fill('.rv input','Kettle');await p.click('.rv [data-act="rename"]');console.log('renamed:',await p.$eval('.rv .name',e=>e.textContent));await p.click('[data-act="revealclose"]');
+console.log('3',await tut());await p.click('[data-act="tab"][data-id="front"]');await p.click('[data-act="pick"]');await p.click('[data-act="deliver"]:not([disabled])');
+console.log('4',await tut());await p.click('[data-act="accept"]');
+console.log('5',await tut());await go();await p.selectOption('select[data-f="mold"]','whisk');await p.selectOption('select[data-f="mat"]','straw');await p.selectOption('select[data-f="spirit"]',{index:1});await p.click('[data-act="place"]');await p.click('[data-act="revealclose"]');
+console.log('6',await tut());await go();await p.click('[data-act="buymold"][data-id="treadle"]');
+console.log('7',await tut());await go();await p.selectOption('select[data-f="mold"]','treadle');await p.selectOption('select[data-f="spirit"]',{index:1});await p.click('[data-act="place"]');await p.click('[data-act="revealclose"]');
+console.log('8',await tut());await go();console.log('workshop machines:',await p.$$eval('.punch',x=>x.length),'| ceilings:',await p.$$eval('.badges .bd',x=>x.map(y=>y.textContent).join(', ')));
+await p.selectOption('select[data-f="fv"]',{index:1});await p.selectOption('select[data-f="ff"]','potato');await p.click('[data-act="feed"]');
+await p.selectOption('select[data-f="tv"]',{index:1});await p.click('button[data-f="tk"][data-v="Pace"]');console.log('train note:',await p.$eval('.box.dbl .note',e=>e.textContent));await p.click('[data-act="train"]');
+console.log('9',await tut());await go();await p.selectOption('select[data-f="send"][data-id="river"]',{index:1});await p.click('[data-act="send"][data-id="river"]');await p.click('[data-act="next"]');
+console.log('10',await tut());console.log('report:',await p.$$eval('.note',n=>n.map(x=>x.textContent).find(t=>t.startsWith('Next:'))),'| button:',await p.$eval('[data-act="presson"]',b=>b.textContent+' '+b.className));await p.click('[data-act="return"]');
+console.log('11',await tut());await go();await p.click('[data-act="pick"]');await p.click('[data-act="deliver"]:not([disabled])');
+console.log('12',await tut(),'| all tabs open:',await p.$$eval('#tabs button:disabled',b=>b.length===0));console.log('street:',await p.$eval('.box .kick',e=>e.textContent),'|',(await p.$$eval('.line',l=>l.map(x=>x.textContent.replace(/\s+/g,' ').slice(0,60)))).slice(0,3).join(' / '));
+console.log('scrollWidth<=390:',await p.evaluate(()=>document.documentElement.scrollWidth<=390));
+await p.click('[data-act="tab"][data-id="roster"]');await p.screenshot({path:process.argv[3],fullPage:false});console.log('errors:',errs);await b.close();})();
