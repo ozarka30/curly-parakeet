@@ -1,0 +1,135 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#efe4c9">
+<title>Bout Card</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Rye&family=Oswald:wght@400;600&family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&display=swap">
+<style>
+/* Throwaway: how a fight looks and plays out in Ninety-Nine. Same paper as the game. */
+:root{--paper:#efe4c9;--paper2:#f6eedc;--ink:#1c1915;--ink2:#4a4239;--muted:#7a7064;--red:#c8362b;--ember:#c8362b;--frost:#4e9fd1;--bloom:#4f8f3a;--clay:#c28a2c;--tide:#2b3f8c;--fd:'Rye',Georgia,serif;--fh:'Oswald','Arial Narrow',Arial,sans-serif;--fb:'Libre Baskerville',Georgia,serif;color-scheme:light}
+*{box-sizing:border-box}body{margin:0;background:var(--paper);color:var(--ink);font-family:var(--fb);font-size:14px;line-height:1.45;background-image:radial-gradient(rgba(28,25,21,.07) 1px,transparent 1.2px);background-size:5px 5px;padding:10px max(16px,env(safe-area-inset-left,0px)) 40px}
+h1,h2,p{margin:0}.wrap{max-width:520px;margin:0 auto}
+button{font-family:var(--fh);text-transform:uppercase;letter-spacing:.06em;font-size:12px;border:2px solid var(--ink);background:var(--paper2);color:var(--ink);padding:6px 10px;min-height:34px;cursor:pointer}
+button:hover{background:var(--ink);color:var(--paper2)}button.pri{background:var(--ink);color:var(--paper2)}button.pri:hover{background:var(--red);border-color:var(--red)}button:disabled{opacity:.45;cursor:not-allowed}
+select{font-family:var(--fh);font-size:12px;border:2px solid var(--ink);background:var(--paper2);color:var(--ink);padding:4px;max-width:100%}
+.mast{border-top:4px solid var(--ink);border-bottom:2px solid var(--ink);padding:6px 0;margin-bottom:10px;display:flex;justify-content:space-between;align-items:flex-end}
+.mast h1{font-family:var(--fd);font-size:28px;line-height:1}.sub{font-family:var(--fh);text-transform:uppercase;letter-spacing:.12em;font-size:10px;color:var(--ink2)}
+.box{border:2px solid var(--ink);background:var(--paper2);padding:10px 12px;margin-top:8px;position:relative}
+.kick{font-family:var(--fh);text-transform:uppercase;letter-spacing:.14em;font-size:10px;color:var(--ink2)}
+.row{display:flex;flex-wrap:wrap;gap:6px 8px;align-items:center}.sb{justify-content:space-between}.muted{color:var(--muted)}.small{font-size:12px}
+.ring{display:grid;grid-template-columns:1fr auto 1fr;gap:8px;align-items:start;margin-top:8px}
+.side{display:flex;flex-direction:column;gap:8px}.side.r .f{flex-direction:row-reverse;text-align:right}
+.f{display:flex;gap:8px;align-items:flex-start;border:2px solid var(--ink);padding:6px;background:var(--paper2);min-width:0;position:relative}
+.f.rogue{border:2px dashed var(--red);background:repeating-linear-gradient(135deg,var(--paper2) 0 10px,#f0dcc8 10px 12px)}
+.f.tamed{border:2px solid var(--ink);background:var(--paper2)}
+.f.out{opacity:.45}.f b{font-family:var(--fh);text-transform:uppercase;font-size:14px;line-height:1.1}
+.hp{height:10px;border:1.5px solid var(--ink);background:var(--paper2);margin-top:4px}.hp i{display:block;height:100%;background:var(--ink);transition:width .25s}
+.f.rogue .hp i{background:var(--red)}
+.chips{display:flex;flex-wrap:wrap;gap:3px;margin-top:3px}.ch{font-family:var(--fh);font-size:10px;letter-spacing:.06em;text-transform:uppercase;border:1.5px solid var(--ink);padding:0 5px}
+.ch.aff{border-left-width:5px}
+.vs{font-family:var(--fd);font-size:22px;align-self:center;text-align:center;min-width:64px;min-height:120px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px}
+.clock{font-family:var(--fh);font-size:12px;letter-spacing:.08em;color:var(--ink2)}
+.stamp{position:absolute;left:50%;top:40%;transform:translate(-50%,-50%) rotate(-8deg);font-family:var(--fd);font-size:44px;line-height:1;color:var(--ink);pointer-events:none;opacity:0;text-shadow:2px 2px 0 var(--paper2)}
+.stamp.show{animation:pop .7s ease-out}.stamp.red{color:var(--red)}.stamp.big{font-size:60px}
+@keyframes pop{0%{opacity:0;transform:translate(-50%,-50%) rotate(-8deg) scale(.6)}20%{opacity:1;transform:translate(-50%,-50%) rotate(-8deg) scale(1.15)}70%{opacity:1}100%{opacity:0;transform:translate(-50%,-60%) rotate(-8deg) scale(1)}}
+@media(prefers-reduced-motion:reduce){.stamp.show{animation:none;opacity:1}.hp i{transition:none}}
+.verdict{display:inline-block;font-family:var(--fh);font-weight:600;text-transform:uppercase;letter-spacing:.1em;color:var(--red);border:3px solid var(--red);padding:3px 10px;transform:rotate(-4deg);font-size:14px;margin:8px 0}
+.verdict.ink{color:var(--ink);border-color:var(--ink)}
+.pbp{font-size:12.5px;max-height:150px;overflow:auto;margin-top:6px;border-top:1px dotted var(--muted);padding-top:4px}.pbp div{padding:2px 0;border-bottom:1px dotted #d8ccb0}.pbp .t{font-family:var(--fh);color:var(--ink2);font-size:11px;margin-right:6px}
+.pt.live{filter:drop-shadow(0 0 5px var(--c))}.pt.wild{animation:shake .6s infinite}@keyframes shake{0%,100%{transform:translateX(0) rotate(0)}25%{transform:translateX(-1.5px) rotate(-2deg)}75%{transform:translateX(1.5px) rotate(2deg)}}
+@media(prefers-reduced-motion:reduce){.pt.wild{animation:none}}
+.hit{animation:hit .3s}@keyframes hit{0%{transform:translateX(0)}30%{transform:translateX(-6px)}60%{transform:translateX(4px)}100%{transform:translateX(0)}}
+.odds{font-family:var(--fh);font-size:12px;letter-spacing:.06em;text-transform:uppercase}
+table{border-collapse:collapse;font-size:12px;width:100%}td,th{border-bottom:1px dotted var(--muted);padding:2px 4px;text-align:left}th{font-family:var(--fh);font-weight:600;text-transform:uppercase;letter-spacing:.08em;font-size:10px}
+</style></head><body><div class="wrap">
+<header class="mast"><div><h1>Bout Card</h1><div class="sub">Ninety-Nine · how a fight plays out · throwaway</div></div><span class="sub">bouts tick once a second</span></header>
+<div class="box"><div class="kick">Your line (top feeds the one below it)</div><div class="row" id="pick"></div><div class="kick" style="margin-top:8px">Across the street</div><div class="row" id="rpick"></div>
+<div class="row sb" style="margin-top:8px"><span class="odds" id="odds"></span><span class="row"><button data-act="sim">Run 500 silently</button><button data-act="speed">Speed ×<span id="spd">1</span></button><button class="pri" data-act="fight">Fight</button></span></div></div>
+<div class="box" id="card"></div>
+<div class="box small"><div class="kick">The math, so you can argue with it</div>
+<p>Stats at level L = 10 + spread × (L − 1). <b>HP</b> = Grit × 8 + 20. <b>Hit</b> = the better of Brawn (strikes) and Wits (spirit) − a third of the target's Grit, never under 1. <b>Acts every</b> 4 s × 10 ÷ Pace (Pace 20 acts every 2 s). <b>Crit</b> = Knack ÷ 200, double damage. <b>Element:</b> your affinity quells theirs ×1.5, theirs quells yours ×0.75 (Bloom → Clay → Tide → Ember → Frost → Bloom). <b>Line:</b> the ally above you feeds your affinity → your hits ×1.25. <b>Heart</b> heals the weakest ally Heart × 0.4 every 5 s. <b>Abilities:</b> Light strikes first and +10% crit · Toll rings every 10 s, Wits × 0.5 to every enemy · Sweep splashes 30% to a second enemy · Steam burns Wits × 0.2 a second for 5 s · Carry +25% HP · Comfort heals the party Heart × 0.3 every 5 s and tames easier. <b>Taming:</b> a beaten rogue is tamed if your best Heart ≥ its level + 10 (Comfort: + 0), else it breaks.</p>
+<table id="tbl"></table></div>
+</div>
+<script>
+const AFF=['Ember','Frost','Bloom','Clay','Tide'];const COL={Ember:'var(--ember)',Frost:'var(--frost)',Bloom:'var(--bloom)',Clay:'var(--clay)',Tide:'var(--tide)'};
+const FEEDS={Bloom:'Ember',Ember:'Clay',Clay:'Frost',Frost:'Tide',Tide:'Bloom'};const QUELLS={Bloom:'Clay',Clay:'Tide',Tide:'Ember',Ember:'Frost',Frost:'Bloom'};
+const STATS=['Brawn','Grit','Heart','Pace','Wits','Knack'];
+const SP={candle:{n:'Candle',y:'Rōsoku-bi',ab:'light',art:'candle',sp:{Brawn:.4,Grit:.8,Heart:1.2,Pace:1.0,Wits:1.6,Knack:1.0}},
+ chime:{n:'Wind chime',y:'Fūrin-kozō',ab:'toll',art:'chime',sp:{Brawn:.4,Grit:1.0,Heart:.8,Pace:1.2,Wits:1.4,Knack:1.2}},
+ whisk:{n:'Whisk',y:'Sasara-bake',ab:'sweep',art:'whisk',sp:{Brawn:1.0,Grit:.6,Heart:.6,Pace:1.8,Wits:.6,Knack:1.4}},
+ teapot:{n:'Teapot',y:'Kyūsu-bōzu',ab:'steam',art:'teapot',sp:{Brawn:.8,Grit:1.4,Heart:1.0,Pace:.6,Wits:1.2,Knack:1.0}},
+ ladle:{n:'Ladle',y:'Hishaku-bake',ab:'carry',art:'ladle',sp:{Brawn:1.6,Grit:1.2,Heart:.6,Pace:1.0,Wits:.4,Knack:1.2}},
+ kokeshi:{n:'Kokeshi',y:'Kokeshi-gami',ab:'comfort',art:'kokeshi',sp:{Brawn:.6,Grit:1.0,Heart:1.8,Pace:.8,Wits:.8,Knack:1.0}}};
+const ABN={light:'Light',toll:'Toll',sweep:'Sweep',steam:'Steam',carry:'Carry',comfort:'Comfort'};
+const SFX={Ember:'ボッ',Frost:'キン',Bloom:'ザッ',Clay:'ドン',Tide:'ザバッ',toll:'カーン',steam:'シュー',crit:'ドカッ!!',heal:'ふう',miss:'…'};
+const NAMES=['Pochi','Momo','Taro','Suzu','Kuro','Hime','Goro','Ume'];
+function face(cx,cy,w,wild,live){if(!live&&!wild)return '';const e=`<circle cx="${cx-w/2}" cy="${cy}" r="1.8" fill="#1c1915"/><circle cx="${cx+w/2}" cy="${cy}" r="1.8" fill="#1c1915"/>`;const m=wild?`<path d="M${cx-w/2} ${cy+7} l${w/4} -3 l${w/4} 3 l${w/4} -3 l${w/4} 3" fill="none" stroke="#1c1915" stroke-width="1.4"/><path d="M${cx-w/2-4} ${cy-5} l6 2 M${cx+w/2+4} ${cy-5} l-6 2" stroke="#1c1915" stroke-width="1.4"/>`:`<path d="M${cx-w/3} ${cy+6} q${w/3} 4 ${w*2/3} 0" fill="none" stroke="#1c1915" stroke-width="1.4"/>`;return e+m;}
+function portrait(sp,opt={}){const P=SP[sp],col=opt.live?COL[opt.aff]:'#8a8177',fill=opt.live?col:'none',fo=opt.live?.18:0,wild=!!opt.wild,live=!!opt.live;const sz=opt.size||56;let body='';const st=`stroke="${col}" stroke-width="2" fill="${fill}" fill-opacity="${fo}"`;
+ if(P.art==='candle')body=`<rect x="20" y="22" width="16" height="28" rx="2" ${st}/><path d="M28 20 q-6 -8 0 -14 q6 6 0 14z" fill="${live?col:'none'}" stroke="${col}" stroke-width="1.5"/>${face(28,34,8,wild,live)}`;
+ else if(P.art==='chime')body=`<path d="M18 30 q10 -22 20 0 z" ${st}/><rect x="17" y="30" width="22" height="4" ${st}/><line x1="28" y1="34" x2="28" y2="52" stroke="${col}" stroke-width="2"/><rect x="24" y="44" width="8" height="10" ${st}/>${face(28,21,7,wild,live)}`;
+ else if(P.art==='whisk')body=`<rect x="25" y="8" width="6" height="16" rx="1" ${st}/>${[-10,-6,-2,2,6,10].map(d=>`<line x1="28" y1="24" x2="${28+d*1.6}" y2="50" stroke="${col}" stroke-width="1.6"/>`).join('')}${face(28,36,8,wild,live)}`;
+ else if(P.art==='teapot')body=`<ellipse cx="28" cy="34" rx="15" ry="12" ${st}/><path d="M43 30 q8 -2 8 6 q0 6 -7 6" fill="none" stroke="${col}" stroke-width="2"/><path d="M13 30 q-6 2 -4 10" fill="none" stroke="${col}" stroke-width="2"/><rect x="22" y="18" width="12" height="5" rx="2" ${st}/>${face(28,33,9,wild,live)}`;
+ else if(P.art==='ladle')body=`<path d="M12 30 h24 v6 q0 8 -12 8 q-12 0 -12 -8z" ${st}/><line x1="36" y1="31" x2="50" y2="12" stroke="${col}" stroke-width="3"/>${face(24,36,8,wild,live)}`;
+ else body=`<circle cx="28" cy="18" r="10" ${st}/><rect x="20" y="28" width="16" height="24" rx="4" ${st}/><path d="M18 16 q10 -10 20 0" fill="none" stroke="${col}" stroke-width="2"/>${face(28,19,7,wild,live)}`;
+ return `<svg class="pt${live?' live':''}${wild?' wild':''}" viewBox="0 0 56 56" width="${sz}" height="${sz}" style="--c:${col}" aria-hidden="true">${body}</svg>`;}
+
+// --- a combatant ---
+function make(name,sp,aff,lv,extra,rogue,stored){const P=SP[sp];const st={};STATS.forEach(k=>st[k]=Math.round((10+P.sp[k]*(lv-1))*(1+(stored||0)/100)));const abs=[P.ab].concat(extra||[]);
+ const hp=Math.round((st.Grit*8+20)*(abs.includes('carry')?1.25:1));return {name,sp,aff,lv,st,abs,hp,max:hp,rogue:!!rogue,burn:0,next:abs.includes('light')?0:interval(st.Pace),id:Math.random()};}
+const interval=p=>Math.max(.5,Math.min(6,4*10/p));
+function dmg(a,d,ctx){const base=Math.max(a.st.Brawn,a.st.Wits);let m=1;if(QUELLS[a.aff]===d.aff)m*=1.5;if(QUELLS[d.aff]===a.aff)m*=.75;if(ctx.fed)m*=1.25;const crit=ctx.rng()<(a.st.Knack/200+(a.abs.includes('light')?.1:0));if(crit)m*=2;return {v:Math.max(1,Math.round(base*m-d.st.Grit/3)),crit,style:a.st.Brawn>=a.st.Wits?'strikes':'spirit'};}
+// one bout, ticked per second. left = your line (top feeds down), right = rogues. Returns the log and result.
+function bout(L,R,rng,live){const log=[];let t=0;const alive=s=>s.filter(x=>x.hp>0);const push=(k,o)=>{o.t=t;o.k=k;log.push(o);if(live)live(o);};
+ const fedOf=(side,i)=>i>0&&side[i-1].hp>0&&FEEDS[side[i-1].aff]===side[i].aff;
+ while(alive(L).length&&alive(R).length&&t<600){
+  for(const [side,foes] of [[L,R],[R,L]]){side.forEach((a,i)=>{if(a.hp<=0)return;
+   if(a.burn>0){const b=Math.max(1,Math.round(a.burnDmg));a.hp-=b;a.burn--;push('burn',{who:a,v:b});if(a.hp<=0){push('down',{who:a});return;}}
+   if(t>0&&t%10===0&&a.abs.includes('toll')){alive(foes).forEach(f=>{const v=Math.max(1,Math.round(a.st.Wits*.5));f.hp-=v;push('toll',{who:a,tgt:f,v});if(f.hp<=0)push('down',{who:f,by:a});});}
+   if(t>0&&t%5===0){const heal=a.st.Heart*.4+(a.abs.includes('comfort')?a.st.Heart*.3:0);const hurt=alive(side).sort((x,y)=>x.hp/x.max-y.hp/y.max)[0];if(hurt&&hurt.hp<hurt.max&&heal>=1){const v=Math.min(hurt.max-hurt.hp,Math.round(heal));hurt.hp+=v;push('heal',{who:a,tgt:hurt,v});}}
+   if(t>=a.next){const tg=alive(foes)[0];if(!tg)return;const r=dmg(a,tg,{fed:fedOf(side,i),rng});tg.hp-=r.v;push('hit',{who:a,tgt:tg,v:r.v,crit:r.crit,style:r.style,fed:fedOf(side,i),adv:QUELLS[a.aff]===tg.aff,dis:QUELLS[tg.aff]===a.aff});
+    if(a.abs.includes('steam')){tg.burn=5;tg.burnDmg=a.st.Wits*.2;}
+    if(a.abs.includes('sweep')){const o=alive(foes).find(f=>f!==tg);if(o){const v=Math.max(1,Math.round(r.v*.3));o.hp-=v;push('sweep',{who:a,tgt:o,v});if(o.hp<=0)push('down',{who:o,by:a});}}
+    if(tg.hp<=0)push('down',{who:tg,by:a});a.next=t+interval(a.st.Pace);}});}
+  t++;}
+ const won=alive(L).length>0&&alive(R).length===0;const bestHeart=Math.max(...L.map(x=>x.st.Heart));
+ const tamed=won?R.filter(r=>bestHeart>=r.lv+10):[];push('end',{won,t,tamed});return {won,t,log,tamed};}
+
+// --- demo state ---
+const presets={pochi:['Pochi','candle','Ember',12,[]],momo:['Momo','kokeshi','Bloom',10,[]],taro:['Taro','ladle','Tide',11,[]],suzu:['Suzu','chime','Frost',9,['steam']],kuro:['Kuro','teapot','Clay',14,['toll','light']],hime:['Hime','whisk','Bloom',8,[]],none:null};
+const sel={a:'momo',b:'pochi',c:'none',rsp:'teapot',raff:'Clay',rlv:14,rn:1};let speed=1,timer=null;
+const esc=s=>String(s).replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
+function line(){return ['a','b','c'].map(k=>presets[sel[k]]).filter(Boolean).map(p=>make(p[0],p[1],p[2],p[3],p[4]));}
+function rogues(){const out=[];for(let i=0;i<sel.rn;i++)out.push(make(i?'Rogue '+SP[sel.rsp].n.toLowerCase()+' '+(i+1):'Rogue '+SP[sel.rsp].n.toLowerCase(),sel.rsp,sel.raff,sel.rlv,[],true));return out;}
+const rngOf=seed=>()=>{seed=(seed+0x6D2B79F5)|0;let t=Math.imul(seed^seed>>>15,seed|1);t^=t+Math.imul(t^t>>>7,t|61);return((t^t>>>14)>>>0)/4294967296;};
+function odds(n){let w=0,tt=0,tame=0;for(let i=0;i<n;i++){const r=bout(line(),rogues(),rngOf(i*7919+1));if(r.won)w++;tt+=r.t;tame+=r.tamed.length;}return {w:w/n,t:tt/n,tame:tame/n};}
+function pickers(){const opt=(k,v)=>Object.keys(presets).map(p=>`<option value="${p}" ${sel[k]===p?'selected':''}>${presets[p]?presets[p][0]+' · '+SP[presets[p][1]].n+' · '+presets[p][2]+' Lv'+presets[p][3]+(presets[p][4].length?' +'+presets[p][4].map(a=>ABN[a]).join('+'):''):'—'}</option>`).join('');
+ document.getElementById('pick').innerHTML=['a','b','c'].map((k,i)=>`<label class="small">${['Top','Middle','Bottom'][i]} <select data-k="${k}">${opt(k)}</select></label>`).join('');
+ document.getElementById('rpick').innerHTML=`<select data-k="rsp">${Object.keys(SP).map(s=>`<option value="${s}" ${sel.rsp===s?'selected':''}>${SP[s].n} (${ABN[SP[s].ab]})</option>`).join('')}</select><select data-k="raff">${AFF.map(a=>`<option ${sel.raff===a?'selected':''}>${a}</option>`).join('')}</select><label class="small">Lv <select data-k="rlv">${[3,6,10,14,18,25,35,50].map(l=>`<option ${sel.rlv==l?'selected':''}>${l}</option>`).join('')}</select></label><label class="small">× <select data-k="rn">${[1,2,3].map(n=>`<option ${sel.rn==n?'selected':''}>${n}</option>`).join('')}</select></label>`;
+ const o=odds(200);document.getElementById('odds').textContent=`${Math.round(o.w*100)}% to win · about ${Math.round(o.t)} s · tames ${o.tame.toFixed(1)} a bout`;
+ document.getElementById('tbl').innerHTML=`<tr><th></th>${STATS.map(s=>`<th>${s.slice(0,5)}</th>`).join('')}<th>HP</th><th>acts</th></tr>${line().concat(rogues()).map(c=>`<tr><td>${esc(c.name)}</td>${STATS.map(s=>`<td>${c.st[s]}</td>`).join('')}<td>${c.max}</td><td>${interval(c.st.Pace).toFixed(1)} s</td></tr>`).join('')}`;}
+function fighter(c,i,side){const fedBy=side&&i>0&&FEEDS[side[i-1].aff]===c.aff;return `<div class="f${c.rogue?(c.tamedNow?' tamed':' rogue'):''}${c.hp<=0?' out':''}" id="f-${c.id}">${portrait(c.sp,{aff:c.aff,live:!c.rogue||c.tamedNow,wild:c.rogue&&!c.tamedNow&&c.hp>0,size:48})}<div style="flex:1;min-width:0"><b>${esc(c.name)}</b><div class="small muted">${SP[c.sp].y} · ${c.aff} · Lv ${c.lv}</div><div class="hp"><i style="width:${Math.max(0,c.hp/c.max*100)}%"></i></div><div class="small">${Math.max(0,c.hp)}/${c.max}</div><div class="chips">${c.abs.map(a=>`<span class="ch">${ABN[a]}</span>`).join('')}${fedBy?'<span class="ch aff" style="border-left-color:var(--bloom)">fed ×1.25</span>':''}</div></div></div>`;}
+function card(L,R,t,msg){document.getElementById('card').innerHTML=`<div class="row sb"><span class="kick">Bout · Kōda's bakery</span><span class="clock" id="clk">${t} s</span></div>
+ <div class="ring"><div class="side">${L.map((c,i)=>fighter(c,i,L)).join('')}</div><div class="vs">vs<div class="stamp" id="stamp"></div></div><div class="side r">${R.map((c,i)=>fighter(c,i,null)).join('')}</div></div>
+ <div id="verdict">${msg||''}</div><div class="pbp" id="pbp"></div>`;}
+function describe(o){const n=x=>`<b>${esc(x.name)}</b>`;switch(o.k){
+ case 'hit':return `${n(o.who)} ${o.style==='strikes'?'strikes':'burns through'} ${n(o.tgt)} for ${o.v}${o.crit?' — a critical':''}${o.adv?', '+o.who.aff+' quells '+o.tgt.aff:''}${o.dis?', into the wrong element':''}${o.fed?', fed from above':''}.`;
+ case 'toll':return `${n(o.who)} rings: ${n(o.tgt)} takes ${o.v}.`;case 'sweep':return `${n(o.who)} sweeps across to ${n(o.tgt)}: ${o.v}.`;case 'burn':return `${n(o.who)} burns: ${o.v}.`;case 'heal':return o.who===o.tgt?`${n(o.who)} catches a breath: +${o.v}.`:`${n(o.who)} tends ${n(o.tgt)}: +${o.v}.`;case 'down':return `${n(o.who)} is down${o.by?' to '+n(o.by):''}.`;
+ case 'end':return o.won?`Won in ${o.t} s.${o.tamed.length?' '+o.tamed.map(x=>esc(x.name)).join(', ')+' tamed: a new face for the shop.':' The rogue broke.'}`:`Lost at ${o.t} s. The bodies are broken; the spirits come home.`;}}
+function stamp(text,cls){const s=document.getElementById('stamp');if(!s)return;s.textContent=text;s.className='stamp '+(cls||'');void s.offsetWidth;s.classList.add('show');}
+function play(){clearInterval(timer);const L=line(),R=rogues();const rng=rngOf(Date.now()&0xffff);const events=[];const r=bout(L.map(c=>({...c})),R.map(c=>({...c})),rng,o=>events.push(o));
+ // replay against fresh copies so the bars move
+ const L2=line(),R2=rogues();const byId={};L.forEach((c,i)=>byId[c.id]=L2[i]);R.forEach((c,i)=>byId[c.id]=R2[i]);
+ card(L2,R2,0);let i=0,t=0;const pbp=document.getElementById('pbp');
+ timer=setInterval(()=>{while(i<events.length&&events[i].t<=t){const o=events[i++];const who=o.who&&byId[o.who.id],tgt=o.tgt&&byId[o.tgt.id];
+   if(o.k==='hit'||o.k==='toll'||o.k==='sweep'||o.k==='burn'){const v=o.k==='burn'?who:tgt;v.hp-=o.v;const el=document.getElementById('f-'+v.id);if(el){el.classList.remove('hit');void el.offsetWidth;el.classList.add('hit');}
+    stamp(o.crit?SFX.crit:o.k==='toll'?SFX.toll:o.k==='burn'?SFX.steam:SFX[who.aff],o.crit?'red big':'');}
+   if(o.k==='heal'){tgt.hp+=o.v;stamp(SFX.heal,'');}
+   if(o.k==='end'){if(o.won)o.tamed.forEach(x=>{byId[x.id].tamedNow=true;});}
+   const d=document.createElement('div');d.innerHTML=`<span class="t">0:${String(o.t).padStart(2,'0')}</span>${describe({...o,who,tgt})}`;pbp.prepend(d);
+   if(o.k==='end'){document.getElementById('verdict').innerHTML=`<span class="verdict${o.won?' ink':''}">${o.won?(o.tamed.length?'Tamed':'Won'):'Broken'}</span>`;stamp(o.won?(o.tamed.length?'なつく':'勝ち'):'負け',o.won?'':'red big');clearInterval(timer);}}
+  // refresh bars
+  L2.concat(R2).forEach(c=>{const el=document.getElementById('f-'+c.id);if(!el)return;const bar=el.querySelector('.hp i');bar.style.width=Math.max(0,c.hp/c.max*100)+'%';el.querySelector('.hp+.small').textContent=Math.max(0,c.hp)+'/'+c.max;el.classList.toggle('out',c.hp<=0);if(c.tamedNow){el.classList.remove('rogue');el.classList.add('tamed');const svg=el.querySelector('svg');if(svg){svg.outerHTML=portrait(c.sp,{aff:c.aff,live:true,size:48});}}});
+  document.getElementById('clk').textContent=t+' s';t++;if(t>r.t+1)clearInterval(timer);},1000/speed);}
+document.addEventListener('change',e=>{const k=e.target.dataset.k;if(!k)return;sel[k]=/^\d+$/.test(e.target.value)?+e.target.value:e.target.value;pickers();});
+document.addEventListener('click',e=>{const a=e.target.closest('[data-act]');if(!a)return;if(a.dataset.act==='fight')play();if(a.dataset.act==='speed'){speed=speed===1?4:speed===4?16:1;document.getElementById('spd').textContent=speed;}
+ if(a.dataset.act==='sim'){const o=odds(500);document.getElementById('verdict').innerHTML=`<span class="small">500 bouts: won ${Math.round(o.w*100)}%, average ${Math.round(o.t)} s, ${o.tame.toFixed(2)} tamed a bout.</span>`;}});
+pickers();card(line(),rogues(),0,'<span class="muted small">Press Fight. Your line is in colour; the rogue is in grey until it is tamed.</span>');
+</script></body></html>
