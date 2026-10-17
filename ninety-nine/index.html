@@ -62,7 +62,7 @@ section{margin-top:14px}
 .pip.on{border-color:var(--c);color:var(--c)} .pip.nat{font-weight:600;border-width:2px} .pip.nat.on{background:var(--c);color:#fff}
 .wildtag{font-family:var(--fh);font-size:10px;letter-spacing:.1em;color:#fff;background:var(--red);padding:1px 5px}
 .pt.live{filter:drop-shadow(0 0 5px var(--c))}
-.pt.wild{animation:shake .6s infinite}
+.pt.wild{animation:shake .6s infinite}img.pt{flex:none;vertical-align:middle}
 @keyframes shake{0%,100%{transform:translateX(0) rotate(0)}25%{transform:translateX(-1.5px) rotate(-2deg)}75%{transform:translateX(1.5px) rotate(2deg)}}
 @media(prefers-reduced-motion:reduce){.pt.wild{animation:none}}
 .house.lit{border-color:var(--c);box-shadow:inset 6px 0 0 var(--c),0 0 14px color-mix(in srgb,var(--c) 40%,transparent)}
@@ -315,7 +315,9 @@ const kindName=T=>T.name+"'s kind";
 // --- portraits ---
 function face(cx,cy,w,wild,live){if(!live&&!wild)return '';const e=`<circle cx="${cx-w/2}" cy="${cy}" r="1.8" fill="#1c1915"/><circle cx="${cx+w/2}" cy="${cy}" r="1.8" fill="#1c1915"/>`;
  const m=wild?`<path d="M${cx-w/2} ${cy+7} l${w/4} -3 l${w/4} 3 l${w/4} -3 l${w/4} 3" fill="none" stroke="#1c1915" stroke-width="1.4"/><path d="M${cx-w/2-4} ${cy-5} l6 2 M${cx+w/2+4} ${cy-5} l-6 2" stroke="#1c1915" stroke-width="1.4"/>`:`<path d="M${cx-w/3} ${cy+6} q${w/3} 4 ${w*2/3} 0" fill="none" stroke="#1c1915" stroke-width="1.4"/>`;return e+m;}
+const ART={candle:'pochi',teapot:'teapot',kokeshi:'momo'}; // ponytail: baked colour, so a Frost candle still shows red; fine until the rig arrives
 function portrait(sp,opt={}){const P=SP[sp],a=opt.aff||P.fav,col=opt.live?COL[a]:'#8a8177',fill=opt.live?col:'none',fo=opt.live?.18:0,t2=P.t===2,wild=!!opt.wild,live=!!opt.live;const sz=opt.size||56;
+ const pic=!t2&&ART[P.art];if(pic&&(live||wild))return `<img class="pt${live?' live':''}${wild?' wild':''}" src="art/${pic}-${wild?'wild':'tame'}.webp" width="${sz}" height="${sz}" style="--c:${col};object-fit:contain" alt="">`;
  let body='';const st=`stroke="${col}" stroke-width="2" fill="${fill}" fill-opacity="${fo}"`;
  if(P.art==='candle')body=`<rect x="20" y="22" width="16" height="28" rx="2" ${st}/><path d="M28 20 q-6 -8 0 -14 q6 6 0 14z" fill="${live?col:'none'}" stroke="${col}" stroke-width="1.5"/>${t2?`<rect x="14" y="18" width="28" height="4" ${st}/>`:''}${face(28,34,8,wild,live)}`;
  else if(P.art==='chime')body=`<path d="M18 30 q10 -22 20 0 z" ${st}/><rect x="17" y="30" width="22" height="4" ${st}/><line x1="28" y1="34" x2="28" y2="52" stroke="${col}" stroke-width="2"/><rect x="24" y="44" width="8" height="10" ${st}/>${t2?`<path d="M14 32 q14 -28 28 0" fill="none" stroke="${col}" stroke-width="1.5"/>`:''}${face(28,21,7,wild,live)}`;
