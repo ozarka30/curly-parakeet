@@ -1,31 +1,23 @@
-// Headless click-through of the v0.2 opening at phone width, real seconds. Usage: node tools/render.js index.html shot.png  (npm i playwright)
-const {chromium}=require('playwright');const fs=require('fs');
-(async()=>{const html=fs.readFileSync(process.argv[2],'utf8');
-const b=await chromium.launch({executablePath:'/opt/pw-browsers/chromium-1194/chrome-linux/chrome'});
+// Headless click-through of the v0.3 opening at phone width, from file:// so art/ resolves. Usage: node tools/render.js shot.png
+const {chromium}=require('playwright');const path=require('path');
+(async()=>{const b=await chromium.launch({executablePath:'/opt/pw-browsers/chromium-1194/chrome-linux/chrome'});
 const p=await b.newPage({viewport:{width:390,height:844}});p.setDefaultTimeout(8000);const errs=[];
-p.on('console',m=>{if(m.type()==='error'&&!/ERR_FAILED/.test(m.text()))errs.push(m.text())});p.on('pageerror',e=>errs.push('PAGEERROR '+e.message));p.on('dialog',d=>d.accept());
-await p.route('**/*',r=>r.request().url().startsWith('data:')||r.request().resourceType()==='document'?r.continue():r.abort());
-await p.setContent(html,{waitUntil:'load'});await p.waitForTimeout(300);
-const txt=async s=>(await p.$eval(s,e=>e.textContent.replace(/\s+/g,' ').trim()));
-const dbg=async()=>{const open=await p.$eval('[data-dbg]',d=>d.open);if(!open)await p.click('[data-dbg] summary');};
-const live=async()=>p.$$eval('#app button:not(:disabled)',bs=>[...new Set(bs.map(x=>x.dataset.act))].filter(a=>!['skip','export','import','new'].includes(a)));
-console.log('0 live:',(await live()).join(','),'| hozuki:',(await txt('.hoz p')).slice(0,60));
-console.log('   bench:',(await txt('.box.dbl')).slice(0,200));
-await p.click('[data-act="sit"]');console.log('1 sitting:',(await txt('.box.dbl')).slice(60,140));
-await p.waitForSelector('.rv',{timeout:9000});console.log('2 reveal:',(await txt('.rv')).slice(0,120));await p.click('[data-act="close"][data-k="reveal"]');
-console.log('   hozuki:',(await txt('.hoz p')).slice(0,80));console.log('   home:',(await txt('.minis')).slice(0,80));
-await p.click('[data-act="assign"][data-h="2"]');console.log('3 bakery:',(await txt('.house.lit')).slice(0,160));
-console.log('   hozuki:',(await txt('.hoz p')).slice(0,80),'| rate:',await txt('.mast .rate'));
-await p.waitForTimeout(2500);console.log('   hozuki 45s rule → spare line later; light:',await txt('.lantern'));
-for(let i=0;i<5;i++)await p.click('[data-act="tap"]');await p.click('.house.lit');console.log('4 sheet:',(await txt('.card')).slice(0,260));
-await p.click('[data-act="awaken"]');console.log('   after awaken:',(await txt('.card')).slice(0,120),'| rate:',await txt('.mast .rate'));await p.click('[data-act="close"][data-k="sheet"]');
-console.log('   bakery:',(await txt('.house.lit')).slice(0,120));
-console.log('5 bench:',(await txt('.box.dbl')).slice(0,120));
-for(let i=0;i<6;i++)await p.click('[data-act="tap"]');await p.click('[data-act="sit"]');await p.waitForSelector('.rv',{timeout:9000});console.log('6 reveal:',(await txt('.rv')).slice(0,60));await p.click('[data-act="close"][data-k="reveal"]');
-await p.click('[data-act="assign"][data-h="1"]');console.log('7 street:',(await txt('#street')).slice(60,400));
-console.log('   hozuki:',(await txt('.hoz p')).slice(0,90));
-await dbg();await p.click('[data-act="skip"][data-s="600"]');console.log('8 away:',(await txt('.away')).slice(0,220));await p.click('[data-act="close"][data-k="card"]');
-console.log('   mast:',await txt('.mast'),'| bar:',await p.$eval('.bar-b',e=>e.textContent.replace(/\s+/g,' ')).catch(()=>'(none)'));
-console.log('   market:',(await txt('section:nth-of-type(5)')).slice(0,200));
+p.on('console',m=>{if(m.type()==='error'&&!/ERR_TUNNEL|ERR_FAILED|fonts/.test(m.text()))errs.push(m.text())});p.on('pageerror',e=>errs.push('PAGEERROR '+e.message));p.on('dialog',d=>d.accept());
+await p.goto('file://'+path.resolve(__dirname,'..','index.html'));await p.waitForTimeout(400);
+const txt=async s=>(await p.$eval(s,e=>e.textContent.replace(/\s+/g,' ').trim()).catch(()=>'(none)'));
+console.log('0 hozuki:',(await txt('.hoz p')).slice(0,70),'| bottom:',await txt('#bottom'));
+await p.click('[data-act="descend"]');await p.waitForTimeout(3500);
+console.log('1 floor:',await txt('section.box .kick'),'| enemies:',await p.$$eval('.side:nth-child(2) .f',es=>es.length),'| imgs ok:',await p.$$eval('img.pt',es=>es.every(e=>e.naturalWidth>0)));
+// hold Pochi, wait for her gauge, tap Flare
+await p.click('[data-act="hold"][data-id="pochi"]');await p.waitForSelector('[data-act="fire"][data-id="pochi"]:not([disabled])',{timeout:40000});
+console.log('2 ready: Flare button live; pochi gauge full; held =',await p.$eval('[data-act="hold"][data-id="pochi"]',e=>e.textContent));
+await p.click('[data-act="fire"][data-id="pochi"]');await p.waitForTimeout(200);console.log('   after tap, gauge bar width:',await p.$eval('#f-pochi .gg i',e=>e.style.width),'| stamp:',await txt('#stamp'));
+// focus an enemy if any, then speed up to reach the first tame
+const foe=await p.$('.side:nth-child(2) .f[role=button]');if(foe){await foe.click();console.log('3 focus:',await p.$$eval('.f.focus',es=>es.length));}
+await p.click('[data-dbg] summary');await p.click('[data-act="speed"]');await p.click('[data-act="speed"]');
+for(let i=0;i<40;i++){await p.waitForTimeout(1000);const t=await txt('.pbp');if(/tamed/.test(t))break;}
+console.log('4 ledger:',(await txt('.pbp')).slice(0,160));console.log('   shop rows:',await p.$$eval('.line',es=>es.length),'| mast:',await txt('.mast'));
+await p.click('[data-act="level"]:not([disabled])').catch(()=>{});console.log('5 level bought? gold:',await txt('.gold'));
+await p.click('[data-act="skip"][data-s="28800"]');await p.waitForTimeout(200);console.log('6 away card:',(await txt('.modal')).slice(0,160));await p.click('[data-act="close"]');
 console.log('scrollWidth<=390:',await p.evaluate(()=>document.documentElement.scrollWidth<=390),'| height:',await p.evaluate(()=>document.documentElement.scrollHeight));
-await p.evaluate(()=>window.scrollTo(0,0));await p.screenshot({path:process.argv[3],fullPage:false});console.log('errors:',errs);await b.close();})();
+await p.evaluate(()=>window.scrollTo(0,0));await p.screenshot({path:process.argv[2]||'shot.png'});console.log('errors:',errs);await b.close();})();
